@@ -1,5 +1,9 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 	<!-- LibBound-1.0: embed this file (after LibStub) from an addon's .toc -->
+	<!-- the minimap button's libraries (LibStub keeps the newest copy of each) -->
+	<Script file="Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua"/>
+	<Script file="Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua"/>
+	<Script file="Libs\LibDBIcon-1.0\LibDBIcon-1.0.lua"/>
 	<Script file="Core.lua"/>
 	<Script file="Skin.lua"/>
 	<Script file="Card.lua"/>

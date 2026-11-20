@@ -47,7 +47,7 @@ function lib.InstallCards(ns)
 		end
 		if CARD.crest then
 			local crest = c:CreateTexture(nil, "BACKGROUND", nil, 2)
-			crest:SetTexture(MEDIA .. CARD.crest)
+			ns.SetEmblem(crest, CARD.crest)
 			crest:SetSize(H * 1.8, H * 1.8)
 			crest:SetPoint("CENTER", c, "RIGHT", -H * 0.45, -H * 0.1)
 			crest:SetVertexColor(unpack(CARD.crestTint or { 1, 1, 1, 0.16 }))
