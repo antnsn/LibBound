@@ -17,7 +17,7 @@
 --   migrate = function(db, defaults) end, -- optional, after the defaults are in
 -- }
 -- Returns true when the addon should load nothing (wrong class): its files then return early.
-local MAJOR, MINOR = "LibBound-1.0", 10
+local MAJOR, MINOR = "LibBound-1.0", 11
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 -- the other files of this copy install themselves only when this copy won (a newer or the
 -- first one); BuffTimer.lua, the last file, clears the flag
@@ -390,8 +390,8 @@ end
 -- positioned to match the card, so the card itself stays unprotected and can show and hide in
 -- combat. Lua only moves, shows or hides the overlay out of combat. A secure state driver hides it
 -- the moment combat starts, and the next out-of-combat Sync brings it back.
--- Create overlays out of combat only. overlay:Sync(spell, unit, explain) shows it over its owner;
--- spell nil hides it.
+-- Create overlays out of combat only. overlay:Sync(spell, unit, explain, macro) shows it over its
+-- owner; spell nil hides it.
 function lib.InstallOverlays(ns)
 	function ns.CastOverlay(owner)
 		local b = CreateFrame("Button", nil, UIParent, "SecureActionButtonTemplate, SecureHandlerStateTemplate")
@@ -409,7 +409,9 @@ function lib.InstallOverlays(ns)
 			GameTooltip:Show()
 		end)
 		b:SetScript("OnLeave", function() GameTooltip:Hide() end)
-		function b:Sync(spell, unit, explain)
+		-- spell: what it casts (shown in the tooltip); macro: optional full macro text instead of
+		-- "/cast [nocombat,@unit] spell" (pet calls, feeding)
+		function b:Sync(spell, unit, explain, macro)
 			if InCombatLockdown() then return end
 			local left, bottom, w, h = owner:GetRect()
 			if not spell or ns.unlocked or not owner:IsVisible() or not left then
@@ -423,7 +425,7 @@ function lib.InstallOverlays(ns)
 			self:ClearAllPoints()
 			self:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", left * s, bottom * s)
 			self:SetSize(w * s, h * s)
-			local macro = ("/cast [nocombat,@%s] %s"):format(unit or "player", spell)
+			macro = macro or ("/cast [nocombat,@%s] %s"):format(unit or "player", spell)
 			if self:GetAttribute("macrotext") ~= macro then self:SetAttribute("macrotext", macro) end
 			self.spell, self.explain = spell, explain
 			self:Show()
