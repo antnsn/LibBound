@@ -17,7 +17,7 @@
 --   migrate = function(db, defaults) end, -- optional, after the defaults are in
 -- }
 -- Returns true when the addon should load nothing (wrong class): its files then return early.
-local MAJOR, MINOR = "LibBound-1.0", 13
+local MAJOR, MINOR = "LibBound-1.0", 14
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 -- the other files of this copy install themselves only when this copy won (a newer or the
 -- first one); BuffTimer.lua, the last file, clears the flag
@@ -387,9 +387,10 @@ function lib.InstallMovers(ns)
 		ns.unlocked = not ns.unlocked
 		for _, m in ipairs(ns.movers) do
 			local f = m.frame
-			f:EnableMouse(ns.unlocked); f:EnableMouseWheel(ns.unlocked)
+			f:EnableMouse(ns.unlocked or f.clickable == true); f:EnableMouseWheel(ns.unlocked)
 			-- locked again: cards with an explanation keep their tooltip, still without clicks
-			if not ns.unlocked and f.explain and f.SetMouseMotionEnabled then
+			-- (clickable cards keep both)
+			if not ns.unlocked and f.explain and f.SetMouseMotionEnabled and not f.clickable then
 				f:SetMouseMotionEnabled(true); f:SetMouseClickEnabled(false)
 			end
 		end
