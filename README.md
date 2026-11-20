@@ -1,3 +1,5 @@
+<p align="center"><a href="https://github.com/antnsn/Lightbound"><img src="https://raw.githubusercontent.com/antnsn/Lightbound/main/Lightbound.png" width="96" alt="Lightbound" title="Lightbound"></a> <a href="https://github.com/antnsn/Chronobound"><img src="https://raw.githubusercontent.com/antnsn/Chronobound/main/Chronobound.png" width="96" alt="Chronobound" title="Chronobound"></a> <a href="https://github.com/antnsn/Stormbound"><img src="https://raw.githubusercontent.com/antnsn/Stormbound/main/Stormbound.png" width="96" alt="Stormbound" title="Stormbound"></a> <a href="https://github.com/antnsn/Packbound"><img src="https://raw.githubusercontent.com/antnsn/Packbound/main/Packbound.png" width="96" alt="Packbound" title="Packbound"></a> <a href="https://github.com/antnsn/Spiritbound"><img src="https://raw.githubusercontent.com/antnsn/Spiritbound/main/Spiritbound.png" width="96" alt="Spiritbound" title="Spiritbound"></a> <a href="https://github.com/antnsn/Felbound"><img src="https://raw.githubusercontent.com/antnsn/Felbound/main/Felbound.png" width="96" alt="Felbound" title="Felbound"></a></p>
+
 # LibBound-1.0
 
 The shared core of the **Bound** class addons for WoW: Forever: Lightbound (paladin),
@@ -16,7 +18,11 @@ scaling, click-to-cast overlays, the slash command with space-free aliases. Then
 - `lib.InstallTravel(ns, cfg)`: the travel panel beside the Escape menu (the class's travel
   spells in one or two columns, a footer line, the Hearthstone).
 - `lib.InstallMinimap(ns, cfg)`, `lib.InstallOptions(ns, cfg)`: the minimap button and the options
-  window (addon pages plus the shared Extras and Skin pages).
+  window (addon pages plus the shared Extras and Skin pages). The button is a LibDataBroker
+  launcher shown by LibDBIcon-1.0 (embedded in `Libs/`), so minimap addons collect it.
+- `ns.EmblemVariant()` (the addon's, optional) returns a file-name suffix such as `"Shadow"`; the
+  logo, watermark, minimap icon and crest use `ns.SetEmblem(tex, base)` and follow it (Spiritbound:
+  holy or shadow hood).
 
 See the comments at the top of each file for the details. Embed it with `LibBound.xml` after
 LibStub; one copy runs no matter how many Bound addons embed it.

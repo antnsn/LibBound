@@ -285,7 +285,7 @@ function lib.InstallOptions(ns, cfg)
 	cfg = cfg or {}
 	local UI = ns.UI
 	local opt = ns.optionsState
-	local C, TEX, MEDIA = UI.C, UI.TEX, UI.MEDIA
+	local C, TEX = UI.C, UI.TEX
 	local Tex, Font, Title = UI.Tex, UI.Font, UI.Title
 	local navButtons = {}
 	local title = ns.cfg.title or ns.addonName
@@ -393,7 +393,7 @@ function lib.InstallOptions(ns, cfg)
 		header:SetScript("OnDragStart", function() win:StartMoving() end)
 		header:SetScript("OnDragStop", function() win:StopMovingOrSizing() end)
 		local logo = header:CreateTexture(nil, "ARTWORK"); logo:SetSize(34, 34); logo:SetPoint("LEFT", 8, -2)
-		logo:SetTexture(MEDIA .. "Logo64")
+		ns.SetEmblem(logo, "Logo64")
 		local t = Title(header, 15); t:SetPoint("LEFT", logo, "RIGHT", 6, 0); t:SetText(cfg.header or title)
 		local ver = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ns.addonName, "Version") or ""
 		local sub = Font(header, 12, C.dim); sub:SetPoint("RIGHT", -16, -2); sub:SetText("v" .. ver)

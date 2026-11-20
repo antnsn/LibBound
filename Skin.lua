@@ -219,7 +219,7 @@ function lib.InstallSkin(ns, opts)
 	-- the addon's emblem, faint, behind the content
 	local function Watermark(parent, size, alpha)
 		local w = parent:CreateTexture(nil, "BORDER")
-		w:SetTexture(MEDIA .. "Logo256")
+		ns.SetEmblem(w, "Logo256")
 		w:SetSize(size, size)
 		w:SetAlpha(alpha)
 		return w
@@ -229,7 +229,7 @@ function lib.InstallSkin(ns, opts)
 		local card = Active().card
 		if not card.crest then return nil end
 		local t = parent:CreateTexture(nil, "BORDER")
-		t:SetTexture(MEDIA .. card.crest)
+		ns.SetEmblem(t, card.crest)
 		t:SetTexCoord(0, 0.75, 0, 0.75)
 		t:SetSize(size * 0.75, size * 0.75)
 		t:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -3, 3)

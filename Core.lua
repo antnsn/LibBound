@@ -17,7 +17,7 @@
 --   migrate = function(db, defaults) end, -- optional, after the defaults are in
 -- }
 -- Returns true when the addon should load nothing (wrong class): its files then return early.
-local MAJOR, MINOR = "LibBound-1.0", 12
+local MAJOR, MINOR = "LibBound-1.0", 13
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 -- the other files of this copy install themselves only when this copy won (a newer or the
 -- first one); BuffTimer.lua, the last file, clears the flag
@@ -100,6 +100,32 @@ function lib:NewAddon(addonName, ns, cfg)
 	ns.IsSecret, ns.Clean, ns.Copy = IsSecret, Clean, Copy
 	ns.Print = Say
 	ns.MEDIA = cfg.media
+
+	-- Emblem textures (logo, watermark, minimap icon, crest) can follow a variant the addon picks,
+	-- e.g. a priest's spec: ns.EmblemVariant() returns a file-name suffix ("Shadow") or nil.
+	-- ns.SetEmblem(tex, "Logo64") sets MEDIA .. "Logo64" .. suffix, and sets it again whenever the
+	-- variant changes (checked on login and SPELLS_CHANGED). Without EmblemVariant: plain names.
+	local emblems = setmetatable({}, { __mode = "k" })
+	local variant
+	local function Variant()
+		if not ns.EmblemVariant then return "" end
+		local ok, v = pcall(ns.EmblemVariant)
+		return (ok and type(v) == "string") and v or ""
+	end
+	function ns.SetEmblem(tex, base)
+		emblems[tex] = base
+		variant = variant or Variant()
+		tex:SetTexture(ns.MEDIA .. base .. variant)
+	end
+	local emblemWatch = CreateFrame("Frame")
+	emblemWatch:RegisterEvent("PLAYER_LOGIN")
+	emblemWatch:RegisterEvent("SPELLS_CHANGED")
+	emblemWatch:SetScript("OnEvent", function()
+		local v = Variant()
+		if v == variant then return end
+		variant = v
+		for tex, base in pairs(emblems) do tex:SetTexture(ns.MEDIA .. base .. v) end
+	end)
 	ns.modules = {}
 	ns.optionPages = ns.optionPages or {}
 
