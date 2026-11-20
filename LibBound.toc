@@ -1,0 +1,8 @@
+## Interface: 16001
+## Title: LibBound-1.0
+## Notes: Shared core of the Bound class addons (Lightbound, Chronobound, ...). Embedded in each; this folder is only for developing it.
+## Author: Rheolux
+## Version: @project-version@
+
+Libs\LibStub\LibStub.lua
+LibBound.xml

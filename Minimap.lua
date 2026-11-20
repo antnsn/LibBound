@@ -1,0 +1,103 @@
+-- LibBound minimap button: left-click options, shift- or middle-click unlocks the frames, an
+-- optional right-click action, drag to move around the minimap. No libraries; the position is an
+-- angle around the minimap (ns.db.minimapAngle). Also listed in the addon compartment.
+-- lib.InstallMinimap(ns, { rightClick = fn, rightClickText = "Right-click: ..." })
+local lib = LibStub("LibBound-1.0")
+if not lib or not lib.installing then return end -- this copy lost to a newer one (Core.lua)
+
+function lib.InstallMinimap(ns, cfg)
+	cfg = cfg or {}
+	local M = {}
+	ns.modules[#ns.modules + 1] = M
+	local btn
+	local title = ns.cfg.title or ns.addonName
+	local ICON = ns.MEDIA .. "Icon64"
+
+	local function Place()
+		local angle = math.rad(ns.db.minimapAngle or 220)
+		local r = (Minimap:GetWidth() / 2) + 5
+		btn:ClearAllPoints()
+		btn:SetPoint("CENTER", Minimap, "CENTER", math.cos(angle) * r, math.sin(angle) * r)
+	end
+
+	local function OnDragUpdate()
+		local mx, my = Minimap:GetCenter()
+		local scale = Minimap:GetEffectiveScale()
+		local cx, cy = GetCursorPosition()
+		cx, cy = cx / scale, cy / scale
+		ns.db.minimapAngle = math.deg(math.atan2(cy - my, cx - mx)) % 360
+		Place()
+	end
+
+	local function OnClick(_, button)
+		if button == "MiddleButton" or (button ~= "RightButton" and IsShiftKeyDown()) then
+			ns.ToggleMove()
+		elseif button == "RightButton" and cfg.rightClick then
+			cfg.rightClick()
+		elseif ns.ToggleOptions then
+			ns.ToggleOptions()
+		end
+	end
+	ns.MinimapClick = OnClick
+
+	function M:Update()
+		if btn then btn:SetShown(ns.db.minimap) end
+	end
+
+	function M:Init()
+		btn = CreateFrame("Button", ns.addonName .. "MinimapButton", Minimap)
+		btn:SetSize(31, 31)
+		btn:SetFrameStrata("MEDIUM")
+		btn:SetFrameLevel(8)
+		btn:RegisterForClicks("LeftButtonUp", "RightButtonUp", "MiddleButtonUp")
+		btn:RegisterForDrag("LeftButton")
+		btn:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
+		local bg = btn:CreateTexture(nil, "BACKGROUND")
+		bg:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
+		bg:SetSize(20, 20)
+		bg:SetPoint("TOPLEFT", 7, -5)
+		local icon = btn:CreateTexture(nil, "ARTWORK")
+		icon:SetTexture(ICON)
+		icon:SetSize(18, 18)
+		icon:SetPoint("TOPLEFT", 7, -6)
+		icon:SetTexCoord(0.04, 0.96, 0.04, 0.96)
+		btn.icon = icon
+		local border = btn:CreateTexture(nil, "OVERLAY")
+		border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
+		border:SetSize(53, 53)
+		border:SetPoint("TOPLEFT")
+		btn:SetScript("OnClick", OnClick)
+		btn:SetScript("OnMouseDown", function() icon:SetPoint("TOPLEFT", 8, -7) end)
+		btn:SetScript("OnMouseUp", function() icon:SetPoint("TOPLEFT", 7, -6) end)
+		btn:SetScript("OnDragStart", function(self)
+			self:LockHighlight()
+			self:SetScript("OnUpdate", OnDragUpdate)
+		end)
+		btn:SetScript("OnDragStop", function(self)
+			self:SetScript("OnUpdate", nil)
+			self:UnlockHighlight()
+			icon:SetPoint("TOPLEFT", 7, -6)
+		end)
+		btn:SetScript("OnEnter", function(self)
+			GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+			GameTooltip:AddLine(title)
+			GameTooltip:AddLine("Left-click: options", 1, 1, 1)
+			if cfg.rightClickText then GameTooltip:AddLine(cfg.rightClickText, 1, 1, 1) end
+			GameTooltip:AddLine((ns.unlocked and "Shift-click: lock frames" or "Shift-click: unlock frames"), 1, 1, 1)
+			GameTooltip:AddLine("Drag: move", 0.6, 0.6, 0.6)
+			GameTooltip:Show()
+		end)
+		btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+		Place()
+		M:Update()
+		if AddonCompartmentFrame and AddonCompartmentFrame.RegisterAddon then
+			pcall(AddonCompartmentFrame.RegisterAddon, AddonCompartmentFrame, {
+				text = title, icon = ICON, notCheckable = true,
+				func = function(_, input, _, _, button)
+					local b = (type(input) == "table" and input.buttonName) or button
+					OnClick(nil, b)
+				end,
+			})
+		end
+	end
+end

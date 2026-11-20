@@ -1,0 +1,9 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<!-- LibBound-1.0: embed this file (after LibStub) from an addon's .toc -->
+	<Script file="Core.lua"/>
+	<Script file="Skin.lua"/>
+	<Script file="Card.lua"/>
+	<Script file="Options.lua"/>
+	<Script file="Minimap.lua"/>
+	<Script file="BuffTimer.lua"/>
+</Ui>
