@@ -12,6 +12,10 @@
 --            level = 20, tip = "Teleport: Orgrimmar", help = "...", learn = "from a mage trainer" } } end,
 --   footer = function() return "Runes: ..." end, -- optional text line (may change in combat)
 --   hearthHelp = "...",                      -- tooltip help for the Hearthstone row
+--   action = function() return { icon = fileID, label = "...", sub = "...", tip = "...", help = "...",
+--            note = "...", click = function() end } end, -- optional: one plain (not secure) row
+--            under the spells, refreshed on every menu open; nil hides it. A click calls click()
+--            and closes the menu. Not a spell, so it can't cast; it can set a waypoint, open a page.
 -- })
 local lib = LibStub("LibBound-1.0")
 if not lib or not lib.installing then return end -- this copy lost to a newer one (Core.lua)
@@ -121,6 +125,31 @@ function lib.InstallTravel(ns, cfg)
 			h:SetScript("OnLeave", function() GameTooltip:Hide() end)
 			h:SetScript("PostClick", CloseAfter)
 			panel.hearth = h
+			if cfg.action then
+				local a = CreateFrame("Button", name .. "Action", panel)
+				a:SetSize(W - 24, ROW_H - 4)
+				a:RegisterForClicks("LeftButtonUp")
+				a.icon = a:CreateTexture(nil, "ARTWORK")
+				a.icon:SetSize(ROW_H - 6, ROW_H - 6); a.icon:SetPoint("LEFT")
+				a.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+				a.text = UI.Font(a, 12, UI.C.text)
+				a.text:SetPoint("LEFT", a.icon, "RIGHT", 6, 4)
+				a.text:SetPoint("RIGHT")
+				a.text:SetWordWrap(false)
+				a.sub = UI.Font(a, 10, UI.C.dim)
+				a.sub:SetPoint("TOPLEFT", a.text, "BOTTOMLEFT", 0, -1)
+				a.sub:SetPoint("RIGHT")
+				a.sub:SetWordWrap(false)
+				UI.Highlight(a)
+				a:SetScript("OnEnter", Tooltip)
+				a:SetScript("OnLeave", function() GameTooltip:Hide() end)
+				a:SetScript("OnClick", function(self)
+					if not self.click then return end
+					pcall(self.click)
+					C_Timer.After(0, function() if not InCombatLockdown() then HideUIPanel(GameMenuFrame) end end)
+				end)
+				panel.action = a
+			end
 		end
 		local rows = cfg.rows()
 		local perCol, lines = {}, 0
@@ -156,18 +185,37 @@ function lib.InstallTravel(ns, cfg)
 		for i = #rows + 1, #buttons do buttons[i]:Hide() end
 		M:UpdateCounts()
 		local footerH = cfg.footer and 20 or 0
+		local actionH = panel.action and ROW_H or 0
 		local top = rowTop + 4
+		if panel.action then
+			panel.action:ClearAllPoints()
+			panel.action:SetPoint("TOPLEFT", 12, -top - lines * ROW_H)
+		end
 		panel.footer:ClearAllPoints()
-		panel.footer:SetPoint("TOPLEFT", 12, -top - lines * ROW_H)
+		panel.footer:SetPoint("TOPLEFT", 12, -top - lines * ROW_H - actionH)
 		panel.hearth:ClearAllPoints()
-		panel.hearth:SetPoint("TOPLEFT", 12, -top - lines * ROW_H - footerH)
-		panel:SetHeight(top + 6 + lines * ROW_H + footerH + ROW_H)
+		panel.hearth:SetPoint("TOPLEFT", 12, -top - lines * ROW_H - actionH - footerH)
+		panel:SetHeight(top + 6 + lines * ROW_H + actionH + footerH + ROW_H)
 	end
 
-	-- the text-only parts (footer, hearthstone place): safe to change in combat
+	-- the text-only parts (footer, action row, hearthstone place): safe to change in combat
 	function M:UpdateCounts()
 		if not panel then return end
 		panel.footer:SetText(cfg.footer and cfg.footer() or "")
+		local a = panel.action
+		if a then
+			local ok, r = pcall(cfg.action)
+			r = ok and type(r) == "table" and r or nil
+			if r then
+				a.icon:SetTexture(r.icon or 134400)
+				a.text:SetText(r.label or "")
+				a.sub:SetText(r.sub or "")
+				a.tip, a.help, a.note, a.click = r.tip or r.label, r.help, r.note, r.click
+				a.icon:SetDesaturated(not r.click)
+				a.text:SetTextColor(unpack(r.click and UI.C.text or UI.C.dim))
+			end
+			a:SetShown(r ~= nil)
+		end
 		local bind = GetBindLocation and ns.Clean(GetBindLocation()) or nil
 		panel.hearth.text:SetText("Hearthstone" .. (bind and (" → " .. bind) or ""))
 		if not InCombatLockdown() then panel.hearth:SetShown(Count(HEARTHSTONE) > 0) end
