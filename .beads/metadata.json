@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "LibBound",
+  "project_id": "be1104ae-63c3-4111-825a-f85e216a5546"
+}
