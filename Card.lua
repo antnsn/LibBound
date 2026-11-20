@@ -10,6 +10,8 @@
 --   breathe = true        the edge itself breathes while the card glows
 -- Texture names are files in the addon's Media folder. Quiet on purpose: no flicker, no swelling.
 -- card:SetIcon(tex), SetTitle(text), SetStatus(text, urgent), SetFaded(on), Glow(on), SetExplain(text)
+-- ns.MakeCard(name, { width = 230, clickable = false }): clickable cards take clicks while locked
+-- (the addon sets OnMouseUp); other cards only take mouse-over, so the world under them stays clickable
 local lib = LibStub("LibBound-1.0")
 if not lib or not lib.installing then return end -- this copy lost to a newer one (Core.lua)
 
@@ -27,6 +29,8 @@ function lib.InstallCards(ns)
 		opts = opts or {}
 		local W, H, ICON = opts.width or 230, 56, 34
 		local c = CreateFrame("Frame", name, UIParent)
+		c.clickable = opts.clickable and true or false
+		if c.clickable then c:EnableMouse(true) end
 		c:SetSize(W, H)
 		c:SetFrameStrata("LOW")
 		c:SetClipsChildren(true) -- the light behind the icon is larger than the card
@@ -200,7 +204,7 @@ function lib.InstallCards(ns)
 			c.explain = text
 			if c.SetMouseClickEnabled then
 				c:SetMouseMotionEnabled(text ~= nil)
-				if not ns.unlocked then c:SetMouseClickEnabled(false) end
+				if not ns.unlocked and not c.clickable then c:SetMouseClickEnabled(false) end
 			end
 		end
 		c:SetScript("OnEnter", function(self)
