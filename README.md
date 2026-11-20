@@ -13,6 +13,8 @@ scaling, click-to-cast overlays, the slash command with space-free aliases. Then
   the skin: sunburst, ring, studs for Lightbound; frosted glass, crystal shards, breathing rim
   for Chronobound).
 - `lib.InstallBuffTimers(ns)`: `ns.MakeBuffTimer(cfg)`, with Well-Rested and Well Fed built in.
+- `lib.InstallTravel(ns, cfg)`: the travel panel beside the Escape menu (the class's travel
+  spells in one or two columns, a footer line, the Hearthstone).
 - `lib.InstallMinimap(ns, cfg)`, `lib.InstallOptions(ns, cfg)`: the minimap button and the options
   window (addon pages plus the shared Extras and Skin pages).
 
