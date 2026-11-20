@@ -17,7 +17,7 @@
 --   migrate = function(db, defaults) end, -- optional, after the defaults are in
 -- }
 -- Returns true when the addon should load nothing (wrong class): its files then return early.
-local MAJOR, MINOR = "LibBound-1.0", 5
+local MAJOR, MINOR = "LibBound-1.0", 8
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 -- the other files of this copy install themselves only when this copy won (a newer or the
 -- first one); BuffTimer.lua, the last file, clears the flag
@@ -33,6 +33,7 @@ lib.SHARED_DEFAULTS = {
 	snap = true, gridSize = 20, -- unlocked frames snap to a grid around the screen centre
 	minimap = true, minimapAngle = 220,
 	explain = true, -- plain-word explanations in tooltips
+	travel = true, -- the travel panel beside the Escape menu (every Bound addon has one)
 	wellRested = true, wellRestedMinutes = 5, wellRestedSound = true, wellRestedIcon = true, wellRestedKeep = false,
 	wrPoint = { "CENTER", "UIParent", "CENTER", 0, 350 },
 	wellFed = true, wellFedMinutes = 3, wellFedSound = true, wellFedIcon = true, wellFedKeep = false,
@@ -201,10 +202,17 @@ function lib.InstallMovers(ns)
 		frame:ClearAllPoints()
 		frame:SetPoint(point, UIParent, "BOTTOMLEFT", ax / fs, ay / fs)
 	end
+	-- a fight starting mid-drag: stop, so a frame with secure children is never moved in combat
+	-- (it stays where it was dropped last; its saved place is unchanged)
+	driver:RegisterEvent("PLAYER_REGEN_DISABLED")
+	driver:SetScript("OnEvent", function()
+		if drag.frame then drag.frame = nil; driver:Hide() end
+	end)
 	driver:SetScript("OnUpdate", function()
 		local f = drag.frame
 		if not f then driver:Hide() return end
 		if not IsMouseButtonDown("LeftButton") then ns.EndDrag(f, drag.key) return end
+		if InCombatLockdown() then drag.frame = nil; driver:Hide() return end
 		local x, y = CursorXY()
 		local ax, ay = Snap(x + drag.ox, y + drag.oy)
 		drag.ax, drag.ay = ax, ay
@@ -228,7 +236,7 @@ function lib.InstallMovers(ns)
 		local fs = frame:GetScale()
 		ns.db[key] = { drag.point, "UIParent", "BOTTOMLEFT", drag.ax / fs, drag.ay / fs }
 		drag.frame = nil
-		ns.ApplyPoint(frame, key)
+		if not InCombatLockdown() then ns.ApplyPoint(frame, key) end
 	end
 
 	function ns.MakeMovable(frame, key)
@@ -460,6 +468,12 @@ function lib.InstallLoader(ns, addonName, cfg)
 		if cfg.migrate then cfg.migrate(ns.db, ns.defaults) end
 		-- modules build secure buttons in Init: after a /reload in combat that would be blocked,
 		-- so they start once the fight is over
+		-- every Bound addon has the travel panel in the same place: an addon without its own
+		-- travel spells still gets it with the Hearthstone
+		if not ns.travel and lib.InstallTravel and ns.UI then
+			lib.InstallTravel(ns, { rows = function() return {} end, columns = {},
+				hearthHelp = "Your Hearthstone takes you back to the inn you set it to. Talk to an innkeeper to change it." })
+		end
 		local function InitAll() for _, m in ipairs(ns.modules) do ns.Guard(m, "Init") end end
 		if InCombatLockdown() then
 			self:RegisterEvent("PLAYER_REGEN_ENABLED")
