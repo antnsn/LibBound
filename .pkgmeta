@@ -1,0 +1,7 @@
+# when an addon embeds LibBound (CurseForge externals), only the library goes in
+ignore:
+  - README.md
+  - CLAUDE.md
+  - AGENTS.md
+  - .beads
+  - .luacheckrc

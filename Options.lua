@@ -2,8 +2,9 @@
 -- Lightbound's Options.lua. Addons add pages with
 --   ns.optionPages[#ns.optionPages + 1] = function(UI) local p = UI.NewPage("Title", "sub") ... end
 -- Widgets return (widget, height); add the height with p:Add(h). UI.CONTENT_W is the usable width.
--- LibBound adds the shared pages itself: "Extras" (Well Rested, Well Fed, minimap, explanations)
--- and "Skin". lib.InstallOptions(ns, { header = "Mage helper", launcher = "one line for Settings" })
+-- LibBound adds the shared pages itself: "Extras" (Well Rested, Well Fed, then the addon's own
+-- extras) and "Skin" (the skin, explanations, the minimap button). lib.InstallOptions(ns, { header = "Mage helper", launcher = "one line for Settings",
+--   extras = function(UI, page, width) end -- more sections on the Extras page })
 local lib = LibStub("LibBound-1.0")
 if not lib or not lib.installing then return end -- this copy lost to a newer one (Core.lua)
 
@@ -220,6 +221,58 @@ function lib.InstallWidgets(ns)
 		return p
 	end
 
+	-- Key binder: label, the key button and a Clear button. Click, then press a key (Esc cancels);
+	-- the combo goes to ns.db[dbKey] and onSet(combo or nil) runs. `what` names it in chat. Height 40.
+	local KEY_MODS = { LSHIFT = 1, RSHIFT = 1, LCTRL = 1, RCTRL = 1, LALT = 1, RALT = 1, LMETA = 1, RMETA = 1 }
+	local function KeyButton(page, y, label, dbKey, onSet, what)
+		local kl = Font(page, 14, C.text)
+		kl:SetPoint("TOPLEFT", 0, y - 5)
+		kl:SetText(label)
+		local clear = Button(page, "Clear", 70, 26)
+		clear:SetPoint("TOPRIGHT", page, "TOPRIGHT", 0, y)
+		local keyBtn = Button(page, "", 190, 26)
+		keyBtn:SetPoint("RIGHT", clear, "LEFT", -8, 0)
+		keyBtn.Sync = function(self)
+			if self.capturing then return end
+			self:SetLabel(ns.db[dbKey] or "Click to set")
+		end
+		local function Stop()
+			keyBtn.capturing = false
+			keyBtn:EnableKeyboard(false)
+			keyBtn:SetScript("OnKeyDown", nil)
+			keyBtn:Sync()
+		end
+		keyBtn.Stop = Stop
+		keyBtn:SetScript("OnClick", function(self)
+			if InCombatLockdown() then ns.Print("leave combat first.") return end
+			self.capturing = true
+			self:SetLabel("Press a key  (Esc cancels)")
+			self:EnableKeyboard(true)
+			self:SetPropagateKeyboardInput(false)
+			self:SetScript("OnKeyDown", function(_, key)
+				if KEY_MODS[key] then return end
+				if key ~= "ESCAPE" then
+					local combo = (IsAltKeyDown() and "ALT-" or "") .. (IsControlKeyDown() and "CTRL-" or "")
+						.. (IsShiftKeyDown() and "SHIFT-" or "") .. key
+					ns.db[dbKey] = combo
+					if onSet then onSet(combo) end
+					ns.Print((what or label:lower()) .. " set to " .. combo .. ".")
+				end
+				Stop()
+			end)
+		end)
+		clear:SetScript("OnClick", function()
+			if keyBtn.capturing then Stop() end -- Clear also ends a capture in progress
+			ns.db[dbKey] = nil; if onSet then onSet(nil) end; keyBtn:Sync()
+		end)
+		-- leaving the page (or the window) ends a capture, so a later keypress can't rebind
+		keyBtn:SetScript("OnHide", function() if keyBtn.capturing then Stop() end end)
+		opt.controls[#opt.controls + 1] = keyBtn
+		opt.capturers[#opt.capturers + 1] = keyBtn
+		return keyBtn, 40
+	end
+	UI.KeyButton = KeyButton
+
 	-- a row that only syncs (for pages with their own state)
 	local function Syncer(fn) local row = { Sync = fn }; opt.controls[#opt.controls + 1] = row; return row end
 
@@ -238,11 +291,8 @@ function lib.InstallOptions(ns, cfg)
 	local title = ns.cfg.title or ns.addonName
 
 	local function BuildExtras()
-		local p = UI.NewPage("Extras", "Levelling helpers, explanations and the minimap button.")
+		local p = UI.NewPage("Extras", "Levelling helpers.")
 		local W = CONTENT_W
-		p:Add(select(2, UI.DBToggle(p, 0, p.y, W, "explain", "Explain things in tooltips",
-			"Plain-word help when you hover over a card or button. Turn it off once you know it all.")) + 6)
-		p:Add(select(2, UI.DBToggle(p, 0, p.y, W, "minimap", "Minimap button  (left-click options, shift-click unlock)")) + 10)
 		local function Timer(label, key, test, note)
 			local y = p.y - 4
 			p:Add(UI.Section(p, y, label) + 2)
@@ -262,6 +312,8 @@ function lib.InstallOptions(ns, cfg)
 		Timer("Well-Rested", "wellRested", function() ns.TestBuffTimer("wellRested") end, "Cozy Sleeping Bag buff.")
 		Timer("Well Fed", "wellFed", function() ns.TestBuffTimer("wellFed") end,
 			"Food buff, also more experience on Forever. Also tells you when it's gone.")
+		-- the addon's own extras below the shared ones (Lightbound: Carrot on a Stick)
+		if cfg.extras then cfg.extras(UI, p, W) end
 	end
 
 	local function BuildSkin()
@@ -293,7 +345,12 @@ function lib.InstallOptions(ns, cfg)
 			reload:SetShown(changed)
 		end)
 		p:Add(30)
-		p:Add(UI.Note(p, p.y, "Colours that carry meaning stay the same in every skin: red for missing or running low."))
+		p:Add(UI.Note(p, p.y, "Colours that carry meaning stay the same in every skin: red for missing or running low.") + 10)
+		-- the general switches live here, where there is room (Extras fills up with addon extras)
+		p:Add(UI.Section(p, p.y, "General") + 2)
+		p:Add(select(2, UI.DBToggle(p, 0, p.y, CONTENT_W, "explain", "Explain things in tooltips",
+			"Plain-word help when you hover over a card or button. Turn it off once you know it all.")) + 6)
+		p:Add(select(2, UI.DBToggle(p, 0, p.y, CONTENT_W, "minimap", "Minimap button  (left-click options, shift-click unlock)")) + 6)
 	end
 
 	local function Select(i)
@@ -389,6 +446,7 @@ function lib.InstallOptions(ns, cfg)
 			Select(math.min(ns.db.optionsPage or 1, #pages))
 		end)
 		win:SetScript("OnHide", function()
+			for _, b in ipairs(opt.capturers) do if b.capturing then b.Stop() end end
 			if win.unlockedHere and ns.unlocked and not InCombatLockdown() then ns.ToggleMove() end
 			win.unlockedHere = nil
 		end)
