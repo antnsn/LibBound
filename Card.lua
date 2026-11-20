@@ -5,6 +5,8 @@
 --   studs   = "Stud"      ornaments in the corners
 --   frost   = "Frost"     a frosted-glass layer over the panel (Chronobound)
 --   shards  = "Shard"     crystal shards cut into the corners
+--   crest   = "Crest"     a large faint class motif behind the right side, cut off by the edge
+--                         (crestTint = { r, g, b, a }); also in the options window and travel panel
 --   breathe = true        the edge itself breathes while the card glows
 -- Texture names are files in the addon's Media folder. Quiet on purpose: no flicker, no swelling.
 -- card:SetIcon(tex), SetTitle(text), SetStatus(text, urgent), SetFaded(on), Glow(on), SetExplain(text)
@@ -42,6 +44,13 @@ function lib.InstallCards(ns)
 			glass:SetTexture(MEDIA .. CARD.frost, "REPEAT", "REPEAT")
 			glass:SetHorizTile(true); glass:SetVertTile(true)
 			glass:SetVertexColor(unpack(CARD.frostTint or { 0.75, 0.92, 1, 0.10 }))
+		end
+		if CARD.crest then
+			local crest = c:CreateTexture(nil, "BACKGROUND", nil, 2)
+			crest:SetTexture(MEDIA .. CARD.crest)
+			crest:SetSize(H * 1.8, H * 1.8)
+			crest:SetPoint("CENTER", c, "RIGHT", -H * 0.45, -H * 0.1)
+			crest:SetVertexColor(unpack(CARD.crestTint or { 1, 1, 1, 0.16 }))
 		end
 		local light = c:CreateTexture(nil, "BACKGROUND", nil, 3)
 		light:SetPoint("TOPLEFT", 1, -1); light:SetPoint("TOPRIGHT", -1, -1); light:SetHeight(H * 0.6)

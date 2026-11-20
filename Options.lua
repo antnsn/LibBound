@@ -378,8 +378,11 @@ function lib.InstallOptions(ns, cfg)
 		win:Hide()
 		tinsert(UISpecialFrames, win:GetName()) -- Escape closes it
 		UI.Skin(win, title)
-		local wm = UI.Watermark(win, 300, 0.06)
-		wm:SetPoint("CENTER", win, "CENTER", SIDE_W / 2, -10)
+		-- the class crest in the corner where the skin has one, else the emblem, faint, in the middle
+		if not UI.Crest(win, 300) then
+			local wm = UI.Watermark(win, 300, 0.06)
+			wm:SetPoint("CENTER", win, "CENTER", SIDE_W / 2, -10)
+		end
 
 		local header = CreateFrame("Frame", nil, win)
 		header:SetPoint("TOPLEFT"); header:SetPoint("TOPRIGHT"); header:SetHeight(HEADER_H)

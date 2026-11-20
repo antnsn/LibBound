@@ -59,6 +59,7 @@ local function Blizzard(base)
 			light = { 1, 1, 1, 0.04 }, rays = { 1, 0.9, 0.6 }, raysFaded = { 0.75, 0.71, 0.63 }, title = { 1, 0.82, 0 },
 			status = { 1, 1, 1 }, urgent = { 1, 0.35, 0.3 }, glowEdge = { 1, 0.82, 0, 1 },
 			burst = false, studs = false, shards = false, frost = false, ring = false, round = false, breathe = false,
+			crest = false,
 		},
 		widgets = "blizzard",
 	})
@@ -88,6 +89,7 @@ local function Flat(base)
 			light = { 1, 1, 1, 0 }, title = accent, status = { 0.86, 0.86, 0.86 }, urgent = { 1, 0.4, 0.35 },
 			glowEdge = { accent[1], accent[2], accent[3], 1 },
 			burst = false, studs = false, shards = false, frost = false, ring = false, round = false, breathe = false,
+			crest = false,
 		},
 		widgets = "flat",
 	})
@@ -222,6 +224,19 @@ function lib.InstallSkin(ns, opts)
 		w:SetAlpha(alpha)
 		return w
 	end
+	-- the skin's class crest cut into a corner of a window or panel (three quarters show), or nil
+	local function Crest(parent, size, alphaScale)
+		local card = Active().card
+		if not card.crest then return nil end
+		local t = parent:CreateTexture(nil, "BORDER")
+		t:SetTexture(MEDIA .. card.crest)
+		t:SetTexCoord(0, 0.75, 0, 0.75)
+		t:SetSize(size * 0.75, size * 0.75)
+		t:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -3, 3)
+		local tint = card.crestTint or { 1, 1, 1, 0.16 }
+		t:SetVertexColor(tint[1], tint[2], tint[3], tint[4] * (alphaScale or 0.6))
+		return t
+	end
 	-- box for small frames; needs a frame made with "BackdropTemplate"
 	local function Box(frame, alpha)
 		if not frame.SetBackdrop then return end
@@ -260,7 +275,7 @@ function lib.InstallSkin(ns, opts)
 		Active = Active, Skins = SKINS, SkinOrder = ORDER, SkinAbout = opts.about or {}, DefaultSkin = opts.default,
 		IsFlat = IsFlat, IconBorder = IconBorder,
 		Tex = Tex, Border = Border, SetFont = SetFont, Font = Font, Title = Title, Hex = Hex,
-		Skin = Skin, Watermark = Watermark, Box = Box, FrameTitle = FrameTitle, RowBg = RowBg, Highlight = Highlight,
+		Skin = Skin, Watermark = Watermark, Crest = Crest, Box = Box, FrameTitle = FrameTitle, RowBg = RowBg, Highlight = Highlight,
 	}
 	lib.InstallWidgets(ns)
 	lib.InstallCards(ns)
