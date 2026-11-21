@@ -1,0 +1,43 @@
+title: LibBound
+description: "The shared core of the Bound addons for World of Warcraft: Forever: API and guides for addon authors."
+url: https://antnsn.github.io
+baseurl: /LibBound
+
+theme: just-the-docs
+color_scheme: libbound
+
+search_enabled: true
+heading_anchors: true
+back_to_top: true
+back_to_top_text: Back to top
+
+aux_links:
+  GitHub:
+    - https://github.com/antnsn/LibBound
+aux_links_new_tab: true
+
+footer_content: LibBound is part of the Bound addons for World of Warcraft Forever. Not affiliated with Blizzard Entertainment.
+
+callouts:
+  note:
+    title: Note
+    color: yellow
+  warning:
+    title: Careful
+    color: red
+  tip:
+    title: Tip
+    color: green
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - .bundle
+
+# every page gets the theme layout (GitHub's own Pages build adds this implicitly; Jekyll 4 does not)
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
