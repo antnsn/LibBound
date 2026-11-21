@@ -36,3 +36,17 @@ wowbench check .
 ```
 
 Its behaviour is tested through the addons that use it (`wowbench test` in Chronobound).
+
+## Screenshots for the docs
+
+Every Bound addon has a hidden `shots` command (`/pack shots`, `/spirit shots`, ...; `Shots.lua`):
+it opens each options page, the unlocked frames and the travel panel in turn, takes a screenshot
+of each and saves where every frame sat in the addon's saved variables. Don't touch anything while
+it runs; a fight stops it. Then `/reload` and, from `Interface/AddOns`:
+
+```bash
+python3 LibBound/tools/crop_shots.py Spiritbound   # crops into Spiritbound/docs/screenshots
+```
+
+Chat windows are pixelated. The addon's own skin goes to `docs/screenshots/`, other skins (switch
+skin, reload, run it again) to `docs/screenshots/skins/<skin>/`. Needs Pillow (`pip install pillow`).

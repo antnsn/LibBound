@@ -5,9 +5,9 @@ ignore = { "212", "432" }
 exclude_files = { "Libs/" }
 read_globals = {
 	"AddonCompartmentFrame", "C_AddOns", "C_Item", "GameMenuFrame", "GetBindLocation", "GetCVarBool", "C_Spell", "C_Timer", "C_UnitAuras", "ChatTypeInfo", "CreateColor",
-	"CreateFrame", "GameTooltip", "geterrorhandler", "GetCursorPosition", "GetTime", "HideUIPanel", "InCombatLockdown",
+	"CreateFrame", "date", "GameTooltip", "geterrorhandler", "GetCursorPosition", "GetTime", "HideUIPanel", "InCombatLockdown",
 	"IsAltKeyDown", "IsControlKeyDown", "IsMouseButtonDown", "IsPlayerSpell", "IsShiftKeyDown", "LibStub", "Minimap", "PlaySound", "RaidNotice_AddMessage",
-	"RaidWarningFrame", "RegisterStateDriver", "ReloadUI", "Settings", "SettingsPanel", "SOUNDKIT", "strlower",
+	"RaidWarningFrame", "RegisterStateDriver", "ReloadUI", "Screenshot", "ShowUIPanel", "Settings", "SettingsPanel", "SOUNDKIT", "strlower",
 	"strsplit", "strtrim", "tinsert", "UIParent", "UISpecialFrames", "UnitAffectingCombat", "UnitClass",
 	"UnitIsDeadOrGhost", "UnitName", "issecretvalue", "canaccessvalue",
 }
