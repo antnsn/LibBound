@@ -68,3 +68,12 @@ glow for each combo point on the target, with its own **Combo points** options p
 `Options.lua` where the page should go). `active` limits it, e.g. to Cat Form. Make the pip
 textures from a painted pip with `python3 tools/make_combo_media.py ART.png ADDON/Media`. See
 [the API page](https://antnsn.github.io/LibBound/api/combo-bar.html).
+
+## Power bar
+
+`PowerBar.lua`: `Bound.InstallPowerBar(ns, { power, title, active, overlay, ... })` adds a rage
+(or energy) bar from layered painted art, horizontal or vertical, with the number, a spark at the
+fill's end and a glow when full, and its own options page. The Blizzard and Flat skins get a plain
+bar (`Bound.BarLook`, shared with the combo bar). Make the textures with
+`python3 tools/make_bar_media.py SRC_DIR ADDON/Media`. See
+[the API page](https://antnsn.github.io/LibBound/api/power-bar.html).

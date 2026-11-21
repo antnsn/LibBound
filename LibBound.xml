@@ -13,5 +13,6 @@
 	<Script file="Shots.lua"/>
 	<Script file="BuffKey.lua"/>
 	<Script file="ComboBar.lua"/>
+	<Script file="PowerBar.lua"/>
 	<Script file="BuffTimer.lua"/> <!-- last: it ends the install (lib.installing) -->
 </Ui>
