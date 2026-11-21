@@ -17,7 +17,7 @@
 --   migrate = function(db, defaults) end, -- optional, after the defaults are in
 -- }
 -- Returns true when the addon should load nothing (wrong class): its files then return early.
-local MAJOR, MINOR = "LibBound-1.0", 18
+local MAJOR, MINOR = "LibBound-1.0", 19
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 -- the other files of this copy install themselves only when this copy won (a newer or the
 -- first one); BuffTimer.lua, the last file, clears the flag
@@ -180,7 +180,8 @@ function lib:NewAddon(addonName, ns, cfg)
 
 	lib.InstallMovers(ns)
 	lib.InstallOverlays(ns)
-	if lib.InstallBuffKey then lib.InstallBuffKey(ns) end
+	-- buffKey = false: the addon has its own (Lightbound's blessings); no shared key, no Extras section
+	if lib.InstallBuffKey and cfg.buffKey ~= false then lib.InstallBuffKey(ns) end
 	lib.InstallLoader(ns, addonName, cfg)
 	lib.InstallSlash(ns, addonName, cfg)
 	return false
