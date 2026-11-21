@@ -10,6 +10,7 @@
 --   ns.groupBuffs[#ns.groupBuffs + 1] = { list = { spell IDs, lowest rank first },
 --     names = function() return { aura names that count, e.g. the Prayer version } end,
 --     enabled = function() return true end }  -- optional
+-- An addon with its own buff key turns this one off: Bound:NewAddon(name, ns, { buffKey = false, ... }).
 local lib = LibStub("LibBound-1.0")
 if not lib or not lib.installing then return end -- this copy lost to a newer one (Core.lua)
 
