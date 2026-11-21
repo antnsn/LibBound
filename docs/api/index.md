@@ -27,6 +27,7 @@ Two kinds of names:
 | [Minimap button](minimap.html) | `Minimap.lua` | `Bound.InstallMinimap` |
 | [Buff key](buff-key.html) | `BuffKey.lua` | `ns.groupBuffs` |
 | [Shots](shots.html) | `Shots.lua`, `tools/crop_shots.py` | `/<cmd> shots` |
+| [Combo bar](combo-bar.html) | `ComboBar.lua`, `tools/make_combo_media.py` | `Bound.InstallComboBar` |
 
 ## The order of calls
 
@@ -43,6 +44,7 @@ Bound.InstallMinimap(ns)
 -- Travel.lua
 Bound.InstallTravel(ns, cfg)
 -- Options.lua
+Bound.InstallComboBar(ns, { glow, active, about }) -- optional: a combo point bar and its page
 Bound.InstallOptions(ns, cfg)
 ```
 
