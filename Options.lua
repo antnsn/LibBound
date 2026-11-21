@@ -405,7 +405,10 @@ function lib.InstallOptions(ns, cfg)
 		ns.SetEmblem(logo, "Logo64")
 		local t = Title(header, 15); t:SetPoint("LEFT", logo, "RIGHT", 6, 0); t:SetText(cfg.header or title)
 		local ver = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ns.addonName, "Version") or ""
-		local sub = Font(header, 12, C.dim); sub:SetPoint("RIGHT", -16, -2); sub:SetText("v" .. ver)
+		-- run from git, the version is still the packager's "@project-version@": show none then
+		local sub = Font(header, 12, C.dim); sub:SetPoint("RIGHT", -16, -2)
+		sub:SetText((ver ~= "" and not ver:find("@", 1, true)) and ("v" .. ver) or "")
+		opt.version = sub
 
 		local side = CreateFrame("Frame", nil, win)
 		side:SetPoint("TOPLEFT", 0, -HEADER_H); side:SetPoint("BOTTOMLEFT", 0, FOOTER_H)
