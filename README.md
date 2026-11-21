@@ -1,9 +1,12 @@
-<p align="center"><a href="https://github.com/antnsn/Lightbound"><img src="https://raw.githubusercontent.com/antnsn/Lightbound/main/Lightbound.png" width="96" alt="Lightbound" title="Lightbound"></a> <a href="https://github.com/antnsn/Chronobound"><img src="https://raw.githubusercontent.com/antnsn/Chronobound/main/Chronobound.png" width="96" alt="Chronobound" title="Chronobound"></a> <a href="https://github.com/antnsn/Stormbound"><img src="https://raw.githubusercontent.com/antnsn/Stormbound/main/Stormbound.png" width="96" alt="Stormbound" title="Stormbound"></a> <a href="https://github.com/antnsn/Packbound"><img src="https://raw.githubusercontent.com/antnsn/Packbound/main/Packbound.png" width="96" alt="Packbound" title="Packbound"></a> <a href="https://github.com/antnsn/Spiritbound"><img src="https://raw.githubusercontent.com/antnsn/Spiritbound/main/Spiritbound.png" width="96" alt="Spiritbound" title="Spiritbound"></a> <a href="https://github.com/antnsn/Felbound"><img src="https://raw.githubusercontent.com/antnsn/Felbound/main/Felbound.png" width="96" alt="Felbound" title="Felbound"></a></p>
+<p align="center"><a href="https://github.com/antnsn/Lightbound"><img src="https://raw.githubusercontent.com/antnsn/Lightbound/main/Lightbound.png" width="96" alt="Lightbound" title="Lightbound"></a> <a href="https://github.com/antnsn/Chronobound"><img src="https://raw.githubusercontent.com/antnsn/Chronobound/main/Chronobound.png" width="96" alt="Chronobound" title="Chronobound"></a> <a href="https://github.com/antnsn/Stormbound"><img src="https://raw.githubusercontent.com/antnsn/Stormbound/main/Stormbound.png" width="96" alt="Stormbound" title="Stormbound"></a> <a href="https://github.com/antnsn/Packbound"><img src="https://raw.githubusercontent.com/antnsn/Packbound/main/Packbound.png" width="96" alt="Packbound" title="Packbound"></a> <a href="https://github.com/antnsn/Spiritbound"><img src="https://raw.githubusercontent.com/antnsn/Spiritbound/main/Spiritbound.png" width="96" alt="Spiritbound" title="Spiritbound"></a> <a href="https://github.com/antnsn/Felbound"><img src="https://raw.githubusercontent.com/antnsn/Felbound/main/Felbound.png" width="96" alt="Felbound" title="Felbound"></a> <a href="https://github.com/antnsn/Dreambound"><img src="https://raw.githubusercontent.com/antnsn/Dreambound/main/Dreambound.png" width="96" alt="Dreambound" title="Dreambound"></a></p>
 
 # LibBound-1.0
 
-The shared core of the **Bound** class addons for WoW: Forever: Lightbound (paladin),
-Chronobound (mage), and the ones to come. Taken from Lightbound's own core.
+The shared core of the **Bound** class addons for WoW: Forever: Lightbound (paladin), Chronobound
+(mage), Stormbound (shaman), Packbound (hunter), Spiritbound (priest), Felbound (warlock) and
+Dreambound (druid). Taken from Lightbound's own core.
+
+**Guide and API reference for addon authors: https://antnsn.github.io/LibBound/**
 
 An addon calls `LibStub("LibBound-1.0"):NewAddon(addonName, ns, cfg)` from its first file. That
 fills `ns` with: saved settings with defaults, safe aura reading on Forever (secret values in

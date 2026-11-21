@@ -6,3 +6,5 @@ ignore:
   - .beads
   - .luacheckrc
   - tools
+  - docs
+  - .github
