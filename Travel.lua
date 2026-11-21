@@ -217,7 +217,7 @@ function lib.InstallTravel(ns, cfg)
 			a:SetShown(r ~= nil)
 		end
 		local bind = GetBindLocation and ns.Clean(GetBindLocation()) or nil
-		panel.hearth.text:SetText("Hearthstone" .. (bind and (" → " .. bind) or ""))
+		panel.hearth.text:SetText("Hearthstone" .. (bind and (": " .. bind) or "")) -- no arrow: the game font has none
 		if not InCombatLockdown() then panel.hearth:SetShown(Count(HEARTHSTONE) > 0) end
 	end
 
