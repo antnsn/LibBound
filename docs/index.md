@@ -54,7 +54,7 @@ That fills the addon's namespace table `ns` with everything below, bound to that
 
 ## Who uses it
 
-All seven Bound addons embed it:
+All eight Bound addons embed it:
 
 | Addon | Class | Slash command |
 | --- | --- | --- |
@@ -65,6 +65,8 @@ All seven Bound addons embed it:
 | Spiritbound | Priest | `/spirit` |
 | Felbound | Warlock | `/fel` |
 | Dreambound | Druid | `/dream` |
+| Ragebound | Warrior | `/rage` |
+| Shadowbound | Rogue | `/shadow` |
 
 Dreambound is the smallest and the cleanest example. The [guide](guide.html) walks through it file by file.
 
