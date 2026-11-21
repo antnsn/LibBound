@@ -60,3 +60,11 @@ skin, reload, run it again) to `docs/screenshots/skins/<skin>/`. Needs Pillow (`
 first shown card's click would, else a group buff from `ns.groupBuffs` on the next party or raid
 member in range who is missing it (less than a minute left counts). See the file's header for
 the `ns.groupBuffs` entry shape.
+
+## Combo bar
+
+`ComboBar.lua`: `Bound.InstallComboBar(ns, { glow, active, about })` adds five pips, one lit with a
+glow for each combo point on the target, with its own **Combo points** options page (call it from
+`Options.lua` where the page should go). `active` limits it, e.g. to Cat Form. Make the pip
+textures from a painted pip with `python3 tools/make_combo_media.py ART.png ADDON/Media`. See
+[the API page](https://antnsn.github.io/LibBound/api/combo-bar.html).
