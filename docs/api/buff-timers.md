@@ -47,9 +47,14 @@ The header comment:
 --   sayGone   say "<label> is gone" when it drops (when not following it)
 --   cast      optional function -> spell name to cast when the card is clicked (out of combat)
 --   explain   optional plain-word tooltip text
---   goneText  status text when it is missing (default "Buff has run out")
+--   goneText  status text when it is missing (default "Buff has run out"), or a function returning it
 --   active    optional function -> false to hide the timer entirely (spell not known yet)
+--   castIDs   optional spell IDs: casting one restarts the timer
+--   duration  seconds a cast lasts until the buff has been seen once
+--   ready     optional function -> false to keep the card from glowing
 ```
+
+`castIDs` exists because Forever hides buffs from addons in combat: a buff cast mid-fight is only seen through `UNIT_SPELLCAST_SUCCEEDED`. The timer then runs for the buff's real duration from the last time it was read, or `duration` until then. A spell ID the addon can't read is ignored. `ready` errors and unreadable answers count as ready, so the glow shows rather than hides.
 
 The code also reads `cfg.title`: a string or a function returning one, set as the card's title on every update. Without it the title is `label`.
 
@@ -66,6 +71,7 @@ The code also reads `cfg.title`: a string or a function returning one, set as th
 | `thornsSound` | boolean | Play the raid warning sound with the warning. |
 | `thornsIcon` | boolean | Show the countdown card. |
 | `thornsKeep` | boolean | Keep following the buff after it is gone: the "has run out" card and one reminder. |
+| `thornsCombat` | boolean | Optional. Only in combat: the card and warnings show only during a fight, and the out-of-combat reminder is off. For a buff cast in the fight (Battle Shout). Unset counts as off. |
 | `thornsPoint` (the `point` key) | point table | The card's position. |
 
 ### What the player sees
@@ -75,6 +81,8 @@ The code also reads `cfg.title`: a string or a function returning one, set as th
 - **sayGone.** With `<key>Keep` off and `sayGone` set: `<label> is gone` when the buff drops.
 - **Unlocked.** The card shows with `5:00 left` so the player can place it.
 - **Not active.** When `active()` returns false the card stays hidden and the timer silent.
+- **Only in combat.** With `<key>Combat` on, out of combat the card stays hidden and the warning waits: entering combat with little time left shows the card and gives the warning then. The card can't be clicked in combat (the cast overlay hides), so `goneText` should not say "click" there: pass a function.
+- **Ready.** With `ready` given, the countdown and gone cards glow only while it returns true (rechecked on `UNIT_POWER_FREQUENT`).
 
 For 5 seconds after login or a zone change it stays quiet, since the aura list may not be filled in yet. A buff that is unreadable (combat restrictions) does not count as gone.
 

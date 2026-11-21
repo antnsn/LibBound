@@ -12,8 +12,14 @@
 --   sayGone   say "<label> is gone" when it drops (when not following it)
 --   cast      optional function -> spell name to cast when the card is clicked (out of combat)
 --   explain   optional plain-word tooltip text
---   goneText  status text when it is missing (default "Buff has run out")
+--   goneText  status text when it is missing (default "Buff has run out"), or a function returning it
 --   active    optional function -> false to hide the timer entirely (spell not known yet)
+--   castIDs   optional spell IDs: casting one restarts the timer. Buffs can't be read in combat on
+--             Forever, so this is how a buff cast mid-fight is seen
+--   duration  seconds a cast lasts until the buff has been seen once (its real duration wins)
+--   ready     optional function -> false to keep the card from glowing (not enough rage yet)
+-- Setting <key>Combat ("only in combat"): the card and its warnings only while in combat, for a
+-- buff that is cast in the fight (Battle Shout). Off or unset: out of combat as usual.
 local lib = LibStub("LibBound-1.0")
 if not lib or not lib.installing then return end -- this copy lost to a newer one (Core.lua)
 
@@ -36,6 +42,8 @@ function lib.InstallBuffTimers(ns)
 		local missing, reminded = false, false
 		local quietUntil = 0 -- right after login or zoning the aura list may not be filled in yet
 		local mode
+		local lastDuration = cfg.duration
+		local IsSecret = lib.IsSecret
 
 		local function Names()
 			local n = cfg.names
@@ -48,6 +56,19 @@ function lib.InstallBuffTimers(ns)
 			return n
 		end
 		local function Active() return not cfg.active or cfg.active() end
+		local function CombatOnly() return ns.db[key .. "Combat"] and true or false end
+		local function Quiet() return CombatOnly() and not ns.InCombat() end
+		-- an error or an answer it can't read counts as ready: the glow then shows, as before
+		local function Ready()
+			if not cfg.ready then return true end
+			local ok, r = pcall(cfg.ready)
+			return not ok or IsSecret(r) or r ~= false
+		end
+		local function GoneText()
+			local g = cfg.goneText
+			if type(g) == "function" then g = g() end
+			return g or "Buff has run out"
+		end
 
 		local function Notify(text)
 			local msg = ("|T%d:24|t %s"):format(buffIcon or cfg.icon, text)
@@ -74,15 +95,20 @@ function lib.InstallBuffTimers(ns)
 
 		local function SetMode(m)
 			-- the overlay follows even when the look stays (combat hid it; the armor choice changed)
-			if m == mode then SyncOverlay() return end
+			if m == mode then
+				if m and m ~= "unlocked" then card:Glow(Ready()) end -- rage comes and goes
+				SyncOverlay()
+				return
+			end
 			mode = m
-			if m then card:Show(); card:Glow(m ~= "unlocked") else card:Glow(false); card:Hide() end
+			if m then card:Show(); card:Glow(m ~= "unlocked" and Ready()) else card:Glow(false); card:Hide() end
 			SyncOverlay()
 		end
 
 		local function Following() return ns.db[key] and ns.db[key .. "Keep"] and Active() end
 
 		local function Remind()
+			if CombatOnly() then return end -- the card in the fight is the reminder
 			if reminded or not missing or not Following() or GetTime() < quietUntil then return end
 			if ns.InCombat() or UnitIsDeadOrGhost("player") then return end
 			reminded = true
@@ -98,12 +124,12 @@ function lib.InstallBuffTimers(ns)
 				return
 			end
 			local left = expires and (expires - GetTime())
-			if not Active() then
+			if not Active() or Quiet() then
 				SetMode(nil)
 			elseif db[key] and db[key .. "Icon"] and warned and left and left > 0 then
 				SetMode("countdown"); card:SetFaded(false); card:SetStatus(FormatTime(left) .. " left")
 			elseif Following() and missing and not expires and GetTime() >= quietUntil then
-				SetMode("gone"); card:SetFaded(true); card:SetStatus(cfg.goneText or "Buff has run out", true)
+				SetMode("gone"); card:SetFaded(true); card:SetStatus(GoneText(), true)
 			else
 				SetMode(nil)
 			end
@@ -118,7 +144,7 @@ function lib.InstallBuffTimers(ns)
 				expires, warned, missing = nil, false, true
 			elseif left > limit + 5 then
 				warned = false -- refreshed (or the limit was raised): arm again
-			elseif not warned and Active() then -- a timer not in use stays silent too
+			elseif not warned and Active() and not Quiet() then -- a timer not in use (or quiet) stays silent too
 				warned = true
 				NotifyLeft(left)
 			end
@@ -136,8 +162,9 @@ function lib.InstallBuffTimers(ns)
 				had, missing, reminded = true, false, false
 				if b.expires and b.expires > 0 then expires = b.expires end
 				if b.icon then buffIcon = b.icon end
+				if b.duration and b.duration > 0 then lastDuration = b.duration end
 			elseif not hidden and GetTime() >= quietUntil then
-				if had and cfg.sayGone and ns.db[key] and not ns.db[key .. "Keep"] and not UnitIsDeadOrGhost("player") then
+				if had and cfg.sayGone and ns.db[key] and not ns.db[key .. "Keep"] and not Quiet() and not UnitIsDeadOrGhost("player") then
 					Notify(cfg.label .. " is gone")
 				end
 				had, expires, warned, missing = false, nil, false, true
@@ -145,12 +172,31 @@ function lib.InstallBuffTimers(ns)
 			Check()
 		end
 
+		-- a cast of the buff (castIDs): up again for its duration, even when buffs can't be read
+		local function Cast(spellID)
+			if IsSecret(spellID) or type(spellID) ~= "number" or not lastDuration then return end
+			for _, id in ipairs(cfg.castIDs) do
+				if id == spellID then
+					had, missing, reminded, warned = true, false, false, false
+					expires = GetTime() + lastDuration
+					Check()
+					return
+				end
+			end
+		end
+
 		function M:Init()
 			local f = CreateFrame("Frame")
-			for _, e in ipairs({ "PLAYER_ENTERING_WORLD", "PLAYER_REGEN_ENABLED", "SPELLS_CHANGED" }) do f:RegisterEvent(e) end
+			for _, e in ipairs({ "PLAYER_ENTERING_WORLD", "PLAYER_REGEN_ENABLED", "PLAYER_REGEN_DISABLED", "SPELLS_CHANGED" }) do
+				f:RegisterEvent(e)
+			end
 			f:RegisterUnitEvent("UNIT_AURA", "player")
+			if cfg.castIDs then f:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player") end
+			if cfg.ready then f:RegisterUnitEvent("UNIT_POWER_FREQUENT", "player") end
 			f:RegisterEvent("PLAYER_UNGHOST"); f:RegisterEvent("PLAYER_ALIVE")
-			f:SetScript("OnEvent", function(_, event)
+			f:SetScript("OnEvent", function(_, event, _, _, spellID)
+				if event == "UNIT_SPELLCAST_SUCCEEDED" then Cast(spellID) return end
+				if event == "UNIT_POWER_FREQUENT" then UpdateCard() return end
 				if event == "PLAYER_ENTERING_WORLD" then
 					quietUntil = GetTime() + 5
 					C_Timer.After(5.5, function() M:Update() end)
