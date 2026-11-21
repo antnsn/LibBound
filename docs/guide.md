@@ -7,7 +7,7 @@ description: A new Bound addon step by step, with Dreambound as the worked examp
 # Build a Bound addon
 {: .no_toc }
 
-This guide builds a class addon on LibBound, step by step. The worked example is Dreambound, the druid addon: it is the smallest of the seven and uses every part of LibBound that a new addon needs. Read its source next to this page.
+This guide builds a class addon on LibBound, step by step. The worked example is Dreambound, the druid addon: it is one of the smallest and uses every part of LibBound that a new addon needs. Read its source next to this page.
 
 1. TOC
 {:toc}
