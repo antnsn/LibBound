@@ -293,6 +293,9 @@ function lib.InstallOptions(ns, cfg)
 	local function BuildExtras()
 		local p = UI.NewPage("Extras", "Levelling helpers.")
 		local W = CONTENT_W
+		p:Add(UI.Section(p, p.y, "Buff key") + 2)
+		p:Add(select(2, UI.KeyButton(p, p.y, "Key", "buffKey", function() ns.BindBuffKey() end, "buff key")))
+		p:Add(UI.Note(p, p.y, "Out of combat, each press casts the next thing a card asks for, then a group buff on the next party member who needs it.") + 6)
 		local function Timer(label, key, test, note)
 			local y = p.y - 4
 			p:Add(UI.Section(p, y, label) + 2)

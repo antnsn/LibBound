@@ -17,7 +17,7 @@
 --   migrate = function(db, defaults) end, -- optional, after the defaults are in
 -- }
 -- Returns true when the addon should load nothing (wrong class): its files then return early.
-local MAJOR, MINOR = "LibBound-1.0", 17
+local MAJOR, MINOR = "LibBound-1.0", 18
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 -- the other files of this copy install themselves only when this copy won (a newer or the
 -- first one); BuffTimer.lua, the last file, clears the flag
@@ -180,6 +180,7 @@ function lib:NewAddon(addonName, ns, cfg)
 
 	lib.InstallMovers(ns)
 	lib.InstallOverlays(ns)
+	if lib.InstallBuffKey then lib.InstallBuffKey(ns) end
 	lib.InstallLoader(ns, addonName, cfg)
 	lib.InstallSlash(ns, addonName, cfg)
 	return false
@@ -427,6 +428,8 @@ function lib.InstallOverlays(ns)
 		RegisterStateDriver(b, "boundcombat", "[combat] 1; 0")
 		b:SetAttribute("type", "macro")
 		b:Hide()
+		ns.overlays = ns.overlays or {}
+		ns.overlays[#ns.overlays + 1] = b -- the buff key casts what the first shown one would (BuffKey.lua)
 		b:SetScript("OnEnter", function(self)
 			if not self.spell then return end
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")

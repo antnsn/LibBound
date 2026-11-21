@@ -50,3 +50,10 @@ python3 LibBound/tools/crop_shots.py Spiritbound   # crops into Spiritbound/docs
 
 Chat windows are pixelated. The addon's own skin goes to `docs/screenshots/`, other skins (switch
 skin, reload, run it again) to `docs/screenshots/skins/<skin>/`. Needs Pillow (`pip install pillow`).
+
+## Buff key
+
+`BuffKey.lua`: one key (Extras page, saved as `db.buffKey`) that, out of combat, casts what the
+first shown card's click would, else a group buff from `ns.groupBuffs` on the next party or raid
+member in range who is missing it (less than a minute left counts). See the file's header for
+the `ns.groupBuffs` entry shape.
