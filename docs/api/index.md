@@ -29,6 +29,7 @@ Two kinds of names:
 | [Shots](shots.html) | `Shots.lua`, `tools/crop_shots.py` | `/<cmd> shots` |
 | [Combo bar](combo-bar.html) | `ComboBar.lua`, `tools/make_combo_media.py` | `Bound.InstallComboBar` |
 | [Power bar](power-bar.html) | `PowerBar.lua`, `tools/make_bar_media.py` | `Bound.InstallPowerBar` |
+| [Cooldown Manager skin](cooldown-skin.html) | `CooldownSkin.lua` | `Bound.InstallCooldownSkin` |
 
 ## The order of calls
 
@@ -47,6 +48,7 @@ Bound.InstallTravel(ns, cfg)
 -- Options.lua
 Bound.InstallComboBar(ns, { glow, active, about }) -- optional: a combo point bar and its page
 Bound.InstallPowerBar(ns, { power, title, active, ... }) -- optional: a rage or energy bar and its page
+Bound.InstallCooldownSkin(ns, { suggest })             -- optional: Blizzard's Cooldown Manager in the addon's look
 Bound.InstallOptions(ns, cfg)
 ```
 

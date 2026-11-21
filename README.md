@@ -77,3 +77,11 @@ fill's end and a glow when full, and its own options page. The Blizzard and Flat
 bar (`Bound.BarLook`, shared with the combo bar). Make the textures with
 `python3 tools/make_bar_media.py SRC_DIR ADDON/Media`. See
 [the API page](https://antnsn.github.io/LibBound/api/power-bar.html).
+
+## Cooldown Manager skin
+
+`CooldownSkin.lua`: `Bound.InstallCooldownSkin(ns, { suggest })` gives Blizzard's Cooldown Manager
+icons the addon's look (edge, count font) and adds a page with a button to Blizzard's settings.
+Forever hides buffs from addons in combat, but the Cooldown Manager is drawn by the game, so its
+stacks and timers keep working there. Secure hooks only, nothing written into Blizzard's frames. See
+[the API page](https://antnsn.github.io/LibBound/api/cooldown-skin.html).
