@@ -296,7 +296,10 @@ function lib.InstallOptions(ns, cfg)
 		if ns.BindBuffKey then -- not when the addon turned the shared buff key off (NewAddon buffKey = false)
 			p:Add(UI.Section(p, p.y, "Buff key") + 2)
 			p:Add(select(2, UI.KeyButton(p, p.y, "Key", "buffKey", function() ns.BindBuffKey() end, "buff key")))
-			p:Add(UI.Note(p, p.y, "Out of combat, each press casts the next thing a card asks for, then a group buff on the next party member who needs it.") + 6)
+			local groupBuff = ns.groupBuffs and #ns.groupBuffs > 0
+			p:Add(UI.Note(p, p.y, groupBuff
+				and "Out of combat, each press casts the next thing a card asks for, then a group buff on the next group member in range who needs it."
+				or "Out of combat, each press casts the next thing a card asks for.") + 6)
 		end
 		local function Timer(label, key, test, note)
 			local y = p.y - 4

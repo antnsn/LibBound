@@ -58,6 +58,10 @@ function lib.InstallBuffTimers(ns)
 			if ns.db[key .. "Sound"] then PlaySound(SOUNDKIT.RAID_WARNING, "Master") end
 		end
 		local function NotifyLeft(secondsLeft)
+			if secondsLeft < 60 then -- a short buff (Battle Shout warns at 30 s): seconds, not "1 min"
+				Notify(("%s: %d sec left"):format(cfg.label, math.max(1, math.floor(secondsLeft + 0.5))))
+				return
+			end
 			local mins = math.max(1, math.floor(secondsLeft / 60 + 0.5))
 			Notify(("%s: %d min left"):format(cfg.label, mins))
 		end
