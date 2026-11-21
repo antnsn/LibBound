@@ -17,7 +17,7 @@
 --   migrate = function(db, defaults) end, -- optional, after the defaults are in
 -- }
 -- Returns true when the addon should load nothing (wrong class): its files then return early.
-local MAJOR, MINOR = "LibBound-1.0", 15
+local MAJOR, MINOR = "LibBound-1.0", 16
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 -- the other files of this copy install themselves only when this copy won (a newer or the
 -- first one); BuffTimer.lua, the last file, clears the flag
@@ -541,13 +541,15 @@ function lib.InstallSlash(ns, addonName, cfg)
 			help = "show or hide the minimap button" },
 		explain = { fn = function() ns.db.explain = not ns.db.explain; ns.Print("explanations in tooltips " .. OnOff(ns.db.explain)) end,
 			help = "turn the plain-word explanations in tooltips on or off" },
+		-- screenshots of every options page and frame for the docs (Shots.lua); not in the help
+		shots = { fn = function() if lib.Shots then lib.Shots(ns) end end, hidden = true },
 	}
 	for k, v in pairs(cfg.commands or {}) do commands[k] = v end
 	ns.commands = commands
 
 	local function Help()
 		local names = {}
-		for k in pairs(commands) do names[#names + 1] = k end
+		for k, c in pairs(commands) do if not c.hidden then names[#names + 1] = k end end
 		table.sort(names)
 		ns.Print(cfg.slash[1] .. " opens the options. Commands:")
 		for _, k in ipairs(names) do print("  " .. cfg.slash[1] .. " " .. k .. " - " .. commands[k].help) end

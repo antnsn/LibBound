@@ -363,6 +363,7 @@ function lib.InstallOptions(ns, cfg)
 		end
 		ns.db.optionsPage = i
 	end
+	opt.Select = function(i) if opt.win then Select(i) end end -- for the screenshots (Shots.lua)
 
 	local win
 	local function Build()
