@@ -8,14 +8,26 @@
 --     active = function() return true end, -- optional: when the bar may show at all (Cat Form)
 --     about = "…",                    -- optional: a line under the page title
 --   })
+-- Looks: the addon's own skin gets the painted pips; the Blizzard and Flat skins plain squares in
+-- the glow's colour (lib.BarLook, below; also used by PowerBar.lua).
 -- Media: <addon>/Media/ComboPoint and ComboGlow, made by LibBound/tools/make_combo_media.py.
 -- Call it where its options page should go among the addon's own (ns.optionPages order).
 local lib = LibStub("LibBound-1.0")
 if not lib or not lib.installing then return end -- this copy lost to a newer one (Core.lua)
 
 local MAX, SIZE, GAP = 5, 30, 4
+local PLAIN, PLAIN_GAP = 16, 3 -- the plain squares
+local WHITE = "Interface\\Buttons\\WHITE8x8"
+local UNLIT = { 0.16, 0.16, 0.16, 0.9 }
 local DIM = { 0.30, 0.30, 0.30, 0.55 }
 local IsSecret = lib.IsSecret
+
+-- which look the bars take in this addon's skin: "painted" (its own), "blizzard" or "flat"
+function lib.BarLook(ns)
+	local key = ns.db and ns.db.skin
+	if key == "flat" or key == "blizzard" then return key end
+	return "painted"
+end
 
 -- combo points on the target, or nil when they can't be read
 function lib.ComboPoints()
@@ -42,12 +54,19 @@ function lib.InstallComboBar(ns, opts)
 	local M = {}
 	ns.modules[#ns.modules + 1] = M
 	local bar, last, pulses = nil, nil, 0
+	local look
 
 	local function Light(n)
 		for i, p in ipairs(bar.pips) do
 			p.lit = i <= n
-			p.glow:SetShown(p.lit)
-			if p.lit then p:SetVertexColor(1, 1, 1, 1) else p:SetVertexColor(DIM[1], DIM[2], DIM[3], DIM[4]) end
+			if look ~= "painted" then
+				local c = p.lit and GLOW or UNLIT
+				p:SetVertexColor(c[1], c[2], c[3], 1)
+				p.glow:Hide()
+			else
+				p.glow:SetShown(p.lit)
+				if p.lit then p:SetVertexColor(1, 1, 1, 1) else p:SetVertexColor(DIM[1], DIM[2], DIM[3], DIM[4]) end
+			end
 		end
 	end
 
@@ -75,11 +94,30 @@ function lib.InstallComboBar(ns, opts)
 	end
 
 	function M:Init()
+		look = lib.BarLook(ns)
 		bar = CreateFrame("Frame", ns.addonName .. "ComboFrame", UIParent)
-		bar:SetSize(MAX * SIZE + (MAX - 1) * GAP, SIZE)
 		bar:SetFrameStrata("MEDIUM")
+		bar.look = look
 		bar.pips = {}
-		for i = 1, MAX do
+		if look ~= "painted" then
+			-- plain squares with a dark 1px edge (the Blizzard skin gets the game's bar texture on them)
+			bar:SetSize(MAX * PLAIN + (MAX - 1) * PLAIN_GAP + 2, PLAIN + 2)
+			for i = 1, MAX do
+				local edge = bar:CreateTexture(nil, "BACKGROUND")
+				edge:SetColorTexture(0, 0, 0, 1)
+				edge:SetSize(PLAIN + 2, PLAIN + 2)
+				edge:SetPoint("LEFT", bar, "LEFT", (i - 1) * (PLAIN + PLAIN_GAP), 0)
+				local p = bar:CreateTexture(nil, "ARTWORK")
+				p:SetTexture(look == "flat" and WHITE or lib.STOCK_TEX.statusbar)
+				p:SetSize(PLAIN, PLAIN)
+				p:SetPoint("CENTER", edge, "CENTER")
+				p.glow = bar:CreateTexture(nil, "BACKGROUND") -- none in the plain look
+				p.glow:Hide()
+				bar.pips[i] = p
+			end
+		end
+		if look == "painted" then bar:SetSize(MAX * SIZE + (MAX - 1) * GAP, SIZE) end
+		for i = 1, (look == "painted" and MAX or 0) do
 			local p = bar:CreateTexture(nil, "ARTWORK")
 			p:SetTexture(ns.MEDIA .. "ComboPoint")
 			p:SetSize(SIZE, SIZE)

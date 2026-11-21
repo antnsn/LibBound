@@ -50,6 +50,10 @@ end,
 
 The frame is `<Addon>ComboFrame`; `bar.pips[i]` are its textures (`pip.lit`, `pip.glow`), `bar.pulse` the flash. `Bound.ComboPoints()` (also `ns.ComboPoints`) returns the points on the target, or nil when unreadable.
 
+## Looks
+
+In the addon's own skin the pips are the painted art with the glow. The Blizzard and Flat skins get five plain squares, lit in the `glow` colour, dark when unlit, with no glow (`Bound.BarLook`, see [Power bar](power-bar.html#looks)). `bar.look` says which.
+
 ## Media
 
 The bar uses `Media/ComboPoint` and `Media/ComboGlow` from the addon's folder. Make both from a painted pip on a transparent background:
