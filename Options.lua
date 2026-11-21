@@ -407,6 +407,8 @@ function lib.InstallOptions(ns, cfg)
 		local ver = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ns.addonName, "Version") or ""
 		-- run from git, the version is still the packager's "@project-version@": show none then
 		local sub = Font(header, 12, C.dim); sub:SetPoint("RIGHT", -16, -2)
+		-- a tag already starts with "v" (CurseForge fills the version from it): show one v either way
+		ver = ver:gsub("^[vV]", "")
 		sub:SetText((ver ~= "" and not ver:find("@", 1, true)) and ("v" .. ver) or "")
 		opt.version = sub
 
