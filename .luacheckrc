@@ -9,6 +9,6 @@ read_globals = {
 	"IsAltKeyDown", "IsControlKeyDown", "IsMouseButtonDown", "IsPlayerSpell", "IsShiftKeyDown", "LibStub", "Minimap", "PlaySound", "RaidNotice_AddMessage",
 	"RaidWarningFrame", "RegisterStateDriver", "ReloadUI", "Screenshot", "ShowUIPanel", "Settings", "SettingsPanel", "SOUNDKIT", "strlower",
 	"strsplit", "strtrim", "tinsert", "UIParent", "UISpecialFrames", "UnitAffectingCombat", "UnitClass",
-	"UnitIsDeadOrGhost", "UnitName", "issecretvalue", "canaccessvalue", "hooksecurefunc", "CooldownViewerSettings", "UnitGUID",
+	"UnitIsDeadOrGhost", "UnitName", "issecretvalue", "canaccessvalue", "hooksecurefunc", "CooldownViewerSettings", "UnitGUID", "GetCVar", "SetCVar",
 }
 globals = { "SlashCmdList", "_G" }
