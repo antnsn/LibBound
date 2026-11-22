@@ -17,6 +17,10 @@ if not lib or not lib.installing then return end -- this copy lost to a newer on
 local VIEWERS = { "EssentialCooldownViewer", "UtilityCooldownViewer", "BuffIconCooldownViewer" }
 local OVERLAY = "UI-HUD-CoolDownManager-IconOverlay"
 local CROP = { 0.07, 0.93, 0.07, 0.93 }
+-- addons that replace the Cooldown Manager's icons with their own; where to set them up instead
+-- (needs: addons it requires, turned on with it, since they may be off for this character)
+local TAKERS = { { addon = "EllesmereUICooldownManager", name = "EllesmereUI", where = "/eui, Cooldown Manager",
+	needs = { "EllesmereUI" } } }
 
 function lib.InstallCooldownSkin(ns, opts)
 	opts = opts or {}
@@ -28,7 +32,16 @@ function lib.InstallCooldownSkin(ns, opts)
 	local hooked = {}
 	local look
 
-	local function Wanted() return look ~= "blizzard" and ns.db.cdmSkin and true or false end
+	-- another addon that draws its own Cooldown Manager icons (and hides Blizzard's): we step aside
+	local function TakenBy()
+		local loaded = C_AddOns and C_AddOns.IsAddOnLoaded
+		if not loaded then return nil end
+		for _, a in ipairs(TAKERS) do
+			local ok, on = pcall(loaded, a.addon)
+			if ok and on then return a end
+		end
+	end
+	local function Wanted() return look ~= "blizzard" and ns.db.cdmSkin and not TakenBy() and true or false end
 
 	local function Edge(parent, color, inset)
 		local f = CreateFrame("Frame", nil, parent)
@@ -147,11 +160,58 @@ function lib.InstallCooldownSkin(ns, opts)
 		if want then Hook() end
 	end
 
-	ns.cooldownSkin = { State = function(item) return states[item] end }
+	-- The player picks who draws the Cooldown Manager: the other addon, or us (its module turned off
+	-- for this character, the way EllesmereUI switches its own modules). Takes effect at a reload.
+	local function Installed()
+		local exists = C_AddOns and (C_AddOns.DoesAddOnExist or C_AddOns.IsAddOnLoaded)
+		if not exists then return nil end
+		for _, a in ipairs(TAKERS) do
+			local ok, on = pcall(exists, a.addon)
+			if ok and on then return a end
+		end
+	end
+	local pending
+	local function Choice()
+		if pending then return pending end
+		local t = TakenBy()
+		return t and t.name or ns.addonName
+	end
+	local function Choose(v)
+		local t = Installed()
+		if not t or v == Choice() then return end
+		local who = UnitName("player")
+		if v == t.name then
+			for _, need in ipairs(t.needs or {}) do pcall(C_AddOns.EnableAddOn, need, who) end
+			pcall(C_AddOns.EnableAddOn, t.addon, who)
+		else
+			pcall(C_AddOns.DisableAddOn, t.addon, who)
+		end
+		pending = v
+		ns.Print(("The Cooldown Manager: %s draws it after a reload (/reload)."):format(v))
+	end
+
+	ns.cooldownSkin = { State = function(item) return states[item] end, Choice = Choice, Choose = Choose }
 
 	ns.optionPages[#ns.optionPages + 1] = function(UI)
 		local p = UI.NewPage("Cooldown Manager", "Blizzard's Cooldown Manager shows buffs with stacks and time left, also in combat.")
 		local W = UI.CONTENT_W
+		local other = Installed()
+		if other then
+			p:Add(select(2, UI.Cycle(p, p.y, "Who draws the Cooldown Manager", { other.name, ns.addonName }, Choice, Choose,
+				function()
+					if Choice() == other.name then
+						return ("%s draws its own icons and locks them in Edit Mode: set them up in %s."):format(other.name, other.where)
+					end
+					return ("%s's Cooldown Manager is off for this character: Blizzard's icons in this addon's look."):format(other.name)
+				end)) + 4)
+			local r = UI.Button(p, "Reload now", 120, 22)
+			r:SetPoint("TOPLEFT", p, "TOPLEFT", 0, p.y)
+			r:SetScript("OnClick", function() if not InCombatLockdown() then ReloadUI() end end)
+			p:Add(30)
+			if TakenBy() then
+				p:Add(UI.Note(p, p.y, ("While %s's Cooldown Manager is loaded, the settings below do nothing."):format(other.name)) + 8)
+			end
+		end
 		p:Add(select(2, UI.DBToggle(p, 0, p.y, W, "cdmSkin", "Give its icons this addon's look",
 			"Our edge and count font. In the Blizzard skin they keep the game's own look.")) + 8)
 		local b = UI.Button(p, "Open the Cooldown Manager", 220, 24)
