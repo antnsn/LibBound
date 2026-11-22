@@ -141,11 +141,20 @@ function lib.InstallCooldownSkin(ns, opts)
 		end
 	end
 
+	-- once, after a switch to this addon (see Choose): the Cooldown Manager on, out of combat
+	local function TurnOn()
+		if not ns.db.cdmTurnOn or TakenBy() or InCombatLockdown() then return end
+		if GetCVar("cooldownViewerEnabled") ~= "1" then pcall(SetCVar, "cooldownViewerEnabled", "1") end
+		if GetCVar("cooldownViewerEnabled") == "1" then ns.db.cdmTurnOn = nil end
+	end
+
 	function M:Init()
 		look = lib.BarLook(ns)
 		local f = CreateFrame("Frame")
-		f:RegisterEvent("ADDON_LOADED"); f:RegisterEvent("PLAYER_ENTERING_WORLD")
+		f:RegisterEvent("ADDON_LOADED"); f:RegisterEvent("PLAYER_ENTERING_WORLD"); f:RegisterEvent("PLAYER_REGEN_ENABLED")
 		f:SetScript("OnEvent", function(_, event, name)
+			if event == "PLAYER_REGEN_ENABLED" then TurnOn() return end
+			if event == "PLAYER_ENTERING_WORLD" then C_Timer.After(3, TurnOn) end
 			if event == "ADDON_LOADED" and name ~= "Blizzard_CooldownViewer" then return end
 			Hook()
 		end)
@@ -188,6 +197,9 @@ function lib.InstallCooldownSkin(ns, opts)
 			pcall(C_AddOns.DisableAddOn, t.addon, who)
 		end
 		if C_AddOns.SaveAddOns then pcall(C_AddOns.SaveAddOns) end
+		-- EllesmereUI puts back at login what its module changed, so the Cooldown Manager it had
+		-- turned on goes off again after this reload: turn it on once that cleanup has run
+		ns.db.cdmTurnOn = v ~= t.name or nil
 		pending = v
 		ns.Print(("The Cooldown Manager: %s draws it after a reload (/reload)."):format(v))
 	end
