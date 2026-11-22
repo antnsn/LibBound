@@ -179,13 +179,15 @@ function lib.InstallCooldownSkin(ns, opts)
 	local function Choose(v)
 		local t = Installed()
 		if not t or v == Choice() then return end
-		local who = UnitName("player")
+		-- this character, the way the game's AddOn list names it (its GUID, not the name), then saved
+		local who = UnitGUID("player")
 		if v == t.name then
 			for _, need in ipairs(t.needs or {}) do pcall(C_AddOns.EnableAddOn, need, who) end
 			pcall(C_AddOns.EnableAddOn, t.addon, who)
 		else
 			pcall(C_AddOns.DisableAddOn, t.addon, who)
 		end
+		if C_AddOns.SaveAddOns then pcall(C_AddOns.SaveAddOns) end
 		pending = v
 		ns.Print(("The Cooldown Manager: %s draws it after a reload (/reload)."):format(v))
 	end
