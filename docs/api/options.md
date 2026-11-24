@@ -19,8 +19,8 @@ The header comment:
 -- Addons add pages with
 --   ns.optionPages[#ns.optionPages + 1] = function(UI) local p = UI.NewPage("Title", "sub") ... end
 -- Widgets return (widget, height); add the height with p:Add(h). UI.CONTENT_W is the usable width.
--- LibBound adds the shared pages itself: "Extras" (Well Rested, Well Fed, then the addon's own
--- extras) and "Skin" (the skin, explanations, the minimap button). lib.InstallOptions(ns, { header = "Mage helper", launcher = "one line for Settings",
+-- LibBound adds the shared pages itself: "Extras" (buff key, Well Rested, Well Fed,
+-- Carrot on a Stick, then the addon's own extras) and "Skin" (the skin, explanations, the minimap button). lib.InstallOptions(ns, { header = "Mage helper", launcher = "one line for Settings",
 --   extras = function(UI, page, width) end -- more sections on the Extras page })
 ```
 
@@ -36,7 +36,7 @@ Bound.InstallOptions(ns, cfg)
 | --- | --- |
 | `cfg.header` | Text in the window header, next to the logo. Default: the addon's title. |
 | `cfg.launcher` | One line for the launcher in the game's Settings > AddOns list. `Type /cmd in chat to open the options.` is added. |
-| `cfg.extras` | `function(UI, page, width)`: more sections at the bottom of the shared Extras page. Lightbound adds its Carrot on a Stick here. |
+| `cfg.extras` | `function(UI, page, width)`: more sections at the bottom of the shared Extras page. The page is 494 px high and the shared sections use most of it: keep an extra to a row or two. |
 
 Call it last, after every file has added its pages. It defines `ns.ToggleOptions()` and registers the Settings launcher. The window is built the first time it opens.
 
@@ -55,7 +55,8 @@ Call it last, after every file has added its pages. It defines `ns.ToggleOptions
 **Extras** ("Levelling helpers."):
 
 - **Buff key**: a `KeyButton` for `ns.db.buffKey` (calls `ns.BindBuffKey()`), and a note.
-- **Well-Rested** and **Well Fed**: Warn, Sound, Countdown card, Keep following, Warn with time left (1 to 30 min), and a Test button.
+- **Well-Rested** and **Well Fed**: a short note and a Test button on the section line; Warn, Sound, Countdown card and Rebuff warning (the `Keep` setting) in one row; Warn with time left (1 to 30 min).
+- **Carrot on a Stick** (when `NewAddon` installed it): a cycle Off / Top trinket / Bottom trinket for `carrotSwap` and `carrotSlot`. See [Carrot on a Stick](carrot.html).
 - Then `cfg.extras(UI, page, width)`.
 
 **Skin** ("How <title>'s frames look. A new skin applies after a reload."):
@@ -192,19 +193,18 @@ A control with only a `Sync`: `fn` runs whenever the window opens. For page part
 
 ## Extras example
 
-Lightbound adds its own section to the Extras page:
+An addon adds its own section to the Extras page:
 
 ```lua
--- Carrot on a Stick, on the shared Extras page
-local function Carrot(_, p)
-	p:Add(Section(p, p.y - 4, "Carrot on a Stick") + 2)
+local function Extra(UI, p, W)
+	p:Add(UI.Section(p, p.y - 4, "Something") + 2)
 	-- ...
 end
 
 Bound.InstallOptions(ns, {
 	header = "Paladin buffs",
 	launcher = "Paladin buffing and self-buff helper.",
-	extras = Carrot,
+	extras = Extra,
 })
 ```
 

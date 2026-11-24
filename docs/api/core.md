@@ -52,6 +52,7 @@ Every field it reads:
 | `media` | string | `nil` | Media folder path with a trailing `\\`. Stored as `ns.MEDIA`. |
 | `migrate` | function | `nil` | `migrate(db, defaults)`, after missing defaults are copied in. |
 | `buffKey` | boolean | `nil` | LibBound 19 and later: `buffKey = false` in the NewAddon config turns the shared buff key off. |
+| `carrot` | boolean | `nil` | LibBound 30 and later: `carrot = false` turns the shared [Carrot on a Stick](carrot.html) off. |
 
 **Returns** `true` when the player's class is not `cfg.class`, else `false`.
 
@@ -94,6 +95,8 @@ lib.SHARED_DEFAULTS = {
 	wrPoint = { "CENTER", "UIParent", "CENTER", 0, 350 },
 	wellFed = true, wellFedMinutes = 3, wellFedSound = true, wellFedIcon = true, wellFedKeep = false,
 	wfPoint = { "CENTER", "UIParent", "CENTER", 0, 290 },
+	-- Carrot on a Stick while mounted (Carrot.lua); carrotPrev: the trinket it took off, per character
+	carrotSwap = false, carrotSlot = "Bottom", carrotPrev = {},
 }
 ```
 

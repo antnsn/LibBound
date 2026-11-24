@@ -15,9 +15,10 @@
 --   commands = { name = { fn = function(arg) end, help = "..." } }, -- extra sub-commands
 --   media = "Interface\\AddOns\\Chronobound\\Media\\",
 --   migrate = function(db, defaults) end, -- optional, after the defaults are in
+--   buffKey = false, carrot = false,      -- optional: no shared buff key / Carrot on a Stick
 -- }
 -- Returns true when the addon should load nothing (wrong class): its files then return early.
-local MAJOR, MINOR = "LibBound-1.0", 29
+local MAJOR, MINOR = "LibBound-1.0", 30
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 -- the other files of this copy install themselves only when this copy won (a newer or the
 -- first one); BuffTimer.lua, the last file, clears the flag
@@ -38,6 +39,8 @@ lib.SHARED_DEFAULTS = {
 	wrPoint = { "CENTER", "UIParent", "CENTER", 0, 350 },
 	wellFed = true, wellFedMinutes = 3, wellFedSound = true, wellFedIcon = true, wellFedKeep = false,
 	wfPoint = { "CENTER", "UIParent", "CENTER", 0, 290 },
+	-- Carrot on a Stick while mounted (Carrot.lua); carrotPrev: the trinket it took off, per character
+	carrotSwap = false, carrotSlot = "Bottom", carrotPrev = {},
 }
 
 -- Secret values (hidden from addons in combat on Forever). Newer clients expose canaccessvalue,
@@ -182,6 +185,7 @@ function lib:NewAddon(addonName, ns, cfg)
 	lib.InstallOverlays(ns)
 	-- buffKey = false: the addon has its own (Lightbound's blessings); no shared key, no Extras section
 	if lib.InstallBuffKey and cfg.buffKey ~= false then lib.InstallBuffKey(ns) end
+	if lib.InstallCarrot and cfg.carrot ~= false then lib.InstallCarrot(ns) end
 	lib.InstallLoader(ns, addonName, cfg)
 	lib.InstallSlash(ns, addonName, cfg)
 	return false

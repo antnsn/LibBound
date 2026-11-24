@@ -10,6 +10,7 @@
 	<Script file="Options.lua"/>
 	<Script file="Minimap.lua"/>
 	<Script file="Travel.lua"/>
+	<Script file="Carrot.lua"/>
 	<Script file="Shots.lua"/>
 	<Script file="BuffKey.lua"/>
 	<Script file="ComboBar.lua"/>

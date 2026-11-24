@@ -2,8 +2,8 @@
 -- Lightbound's Options.lua. Addons add pages with
 --   ns.optionPages[#ns.optionPages + 1] = function(UI) local p = UI.NewPage("Title", "sub") ... end
 -- Widgets return (widget, height); add the height with p:Add(h). UI.CONTENT_W is the usable width.
--- LibBound adds the shared pages itself: "Extras" (Well Rested, Well Fed, then the addon's own
--- extras) and "Skin" (the skin, explanations, the minimap button). lib.InstallOptions(ns, { header = "Mage helper", launcher = "one line for Settings",
+-- LibBound adds the shared pages itself: "Extras" (buff key, Well Rested, Well Fed,
+-- Carrot on a Stick, then the addon's own extras) and "Skin" (the skin, explanations, the minimap button). lib.InstallOptions(ns, { header = "Mage helper", launcher = "one line for Settings",
 --   extras = function(UI, page, width) end -- more sections on the Extras page })
 local lib = LibStub("LibBound-1.0")
 if not lib or not lib.installing then return end -- this copy lost to a newer one (Core.lua)
@@ -307,20 +307,40 @@ function lib.InstallOptions(ns, cfg)
 			local tb = UI.Button(p, "Test", 70, 20)
 			tb:SetPoint("TOPRIGHT", p, "TOPRIGHT", 0, y + 4)
 			tb:SetScript("OnClick", test)
-			if note then p:Add(UI.Note(p, p.y, note)) end
-			local third = math.floor(W / 3)
-			UI.DBToggle(p, 0, p.y, third, key, "Warn")
-			UI.DBToggle(p, third, p.y, third, key .. "Sound", "Sound")
-			UI.DBToggle(p, third * 2, p.y, third, key .. "Icon", "Countdown card")
+			-- the note on the section line, beside Test
+			if note then
+				local n = UI.Font(p, 12, UI.C.dim)
+				n:SetPoint("RIGHT", tb, "LEFT", -10, 0); n:SetJustifyH("RIGHT")
+				n:SetText(note)
+			end
+			-- one row of four (room for Carrot on a Stick below)
+			local quarter = math.floor(W / 4)
+			UI.DBToggle(p, 0, p.y, quarter, key, "Warn")
+			UI.DBToggle(p, quarter, p.y, quarter, key .. "Sound", "Sound")
+			UI.DBToggle(p, quarter * 2, p.y, quarter, key .. "Icon", "Countdown card")
+			UI.DBToggle(p, quarter * 3, p.y, quarter, key .. "Keep", "Rebuff warning",
+				nil, function() ns.UpdateBuffTimers() end)
 			p:Add(32)
-			p:Add(select(2, UI.DBToggle(p, 0, p.y, W, key .. "Keep", "Keep following it after it's gone  (rebuff warning)",
-				nil, function() ns.UpdateBuffTimers() end)) + 4)
 			p:Add(select(2, UI.Slider(p, p.y, "Warn with time left", key .. "Minutes", 1, 30, 1, " min")) + 8)
 		end
 		Timer("Well-Rested", "wellRested", function() ns.TestBuffTimer("wellRested") end, "Cozy Sleeping Bag buff.")
 		Timer("Well Fed", "wellFed", function() ns.TestBuffTimer("wellFed") end,
-			"Food buff, also more experience on Forever. Also tells you when it's gone.")
-		-- the addon's own extras below the shared ones (Lightbound: Carrot on a Stick)
+			"Food buff: more experience on Forever. Says when it's gone.")
+		if ns.carrotShared then -- not when the addon turned it off (NewAddon carrot = false)
+			p:Add(UI.Section(p, p.y - 4, "Carrot on a Stick") + 2)
+			-- one row: Off, or the trinket slot the carrot goes into
+			p:Add(select(2, UI.Cycle(p, p.y, "Wear it while mounted", { "Off", "Top trinket", "Bottom trinket" },
+				function() return ns.db.carrotSwap and (ns.db.carrotSlot .. " trinket") or "Off" end,
+				function(v)
+					ns.db.carrotSwap = v ~= "Off"
+					if v ~= "Off" then ns.db.carrotSlot = v:match("^(%a+)") end
+				end,
+				function()
+					if not ns.db.carrotSwap then return "Your own trinket goes back on when you get off." end
+					return "Swaps out: " .. ns.CarrotSlotItem(ns.db.carrotSlot)
+				end)))
+		end
+		-- the addon's own extras below the shared ones
 		if cfg.extras then cfg.extras(UI, p, W) end
 	end
 
