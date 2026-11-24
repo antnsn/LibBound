@@ -313,12 +313,14 @@ function lib.InstallOptions(ns, cfg)
 				n:SetPoint("RIGHT", tb, "LEFT", -10, 0); n:SetJustifyH("RIGHT")
 				n:SetText(note)
 			end
-			-- one row of four (room for Carrot on a Stick below)
-			local quarter = math.floor(W / 4)
-			UI.DBToggle(p, 0, p.y, quarter, key, "Warn")
-			UI.DBToggle(p, quarter, p.y, quarter, key .. "Sound", "Sound")
-			UI.DBToggle(p, quarter * 2, p.y, quarter, key .. "Icon", "Countdown card")
-			UI.DBToggle(p, quarter * 3, p.y, quarter, key .. "Keep", "Rebuff warning",
+			-- one row of four (room for Carrot on a Stick below); the short labels get narrow
+			-- columns so "Countdown card" and "Rebuff warning" stay on one line
+			local short = math.floor(W * 0.18)
+			local long = math.floor((W - 2 * short) / 2)
+			UI.DBToggle(p, 0, p.y, short, key, "Warn")
+			UI.DBToggle(p, short, p.y, short, key .. "Sound", "Sound")
+			UI.DBToggle(p, short * 2, p.y, long, key .. "Icon", "Countdown card")
+			UI.DBToggle(p, short * 2 + long, p.y, W - short * 2 - long, key .. "Keep", "Rebuff warning",
 				nil, function() ns.UpdateBuffTimers() end)
 			p:Add(32)
 			p:Add(select(2, UI.Slider(p, p.y, "Warn with time left", key .. "Minutes", 1, 30, 1, " min")) + 8)

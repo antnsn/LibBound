@@ -58,9 +58,13 @@ function lib.InstallCarrot(ns)
 
 	function ns.CarrotSlotID() return SLOT_ID[ns.db.carrotSlot] or SLOT_ID.Bottom end
 
-	-- name of what is in a trinket slot now, for the options page
+	-- name of what is in a trinket slot now, for the options page; while riding with the carrot
+	-- on, the trinket it took off (what goes back)
 	function ns.CarrotSlotItem(slotName)
-		local id = GetInventoryItemID("player", SLOT_ID[slotName] or SLOT_ID.Bottom)
+		local slot = SLOT_ID[slotName] or SLOT_ID.Bottom
+		local id = GetInventoryItemID("player", slot)
+		local prev = ns.db and Saved()
+		if id == CARROT and prev and prev.slot == slot then id = prev.item end
 		if not id then return "empty" end
 		local name = C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(id)
 		return name or ("item " .. id)
