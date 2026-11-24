@@ -128,7 +128,7 @@ cd ../Dreambound
 tools/sync-libbound.sh && wowbench test .
 ```
 
-Do the same in Chronobound, Lightbound, Stormbound, Packbound, Spiritbound and Felbound. A new LibBound feature gets its scenario in at least one addon, usually the one that needs it first.
+Do the same in every other Bound addon: Lightbound, Chronobound, Stormbound, Packbound, Spiritbound, Felbound, Ragebound and Shadowbound. A new LibBound feature gets its scenario in at least one addon, usually the one that needs it first.
 
 ## tools/sync-libbound.sh
 
