@@ -1,10 +1,20 @@
 # LibBound-1.0: instructions for AI agents
 
 Shared core of the Bound class addons (WoW: Forever). Used by Chronobound, Stormbound, Packbound,
-Spiritbound, Felbound, Dreambound, Ragebound and Shadowbound, and by Lightbound on its LibBound branch. A change here must
+Spiritbound, Felbound, Dreambound, Ragebound and Shadowbound, and by Lightbound. A change here must
 keep every embedding addon's scenarios green: run `tools/sync-libbound.sh && wowbench test .` in
 each of them. The developer docs (docs/, https://antnsn.github.io/LibBound/) document the API:
 update them with an API change.
+
+## Skills
+
+Shared knowledge lives in Claude Code skills (plugin `wow-addons`, repo antnsn/addon-skills). Load the
+one that fits before working here; this file only holds what is specific to this repo.
+
+- `wow-addons:bound-addons`: the Bound family and LibBound: what goes where, MINOR, rolling a change out, tests, style
+- `wow-addons:forever-client`: the Forever client API: secret values, missing globals, API lookups, probing in game
+
+## Rules
 
 - Lua 5.1; only API in wowbench's `api/client.txt`; `wowbench check .` 0 errors; luacheck clean.
 - Everything per addon goes through `ns` (no shared mutable state between addons).
