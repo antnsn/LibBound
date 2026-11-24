@@ -10,5 +10,7 @@ read_globals = {
 	"RaidWarningFrame", "RegisterStateDriver", "ReloadUI", "Screenshot", "ShowUIPanel", "Settings", "SettingsPanel", "SOUNDKIT", "strlower",
 	"strsplit", "strtrim", "tinsert", "UIParent", "UISpecialFrames", "UnitAffectingCombat", "UnitClass",
 	"UnitIsDeadOrGhost", "UnitName", "issecretvalue", "canaccessvalue", "hooksecurefunc", "CooldownViewerSettings", "UnitGUID", "GetCVar", "SetCVar",
+	"IsMounted", "IsInInstance", "GetInventoryItemID", "EquipItemByName", "C_Container", "PickupInventoryItem", "PutItemInBackpack",
+	"PutItemInBag", "ContainerIDToInventoryID", "CursorHasItem", "NUM_BAG_SLOTS", "GetRealmName", "GetItemCount",
 }
 globals = { "SlashCmdList", "_G" }
