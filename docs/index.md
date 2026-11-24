@@ -54,7 +54,7 @@ That fills the addon's namespace table `ns` with everything below, bound to that
 
 ## Who uses it
 
-All eight Bound addons embed it:
+All nine Bound addons embed it:
 
 | Addon | Class | Slash command |
 | --- | --- | --- |
@@ -107,7 +107,7 @@ See [Testing and tools](testing.html) for the scripts.
 Several Bound addons can be installed at once, each with its own copy of LibBound. LibStub keeps one: the copy with the highest `MINOR` number. `Core.lua` starts with:
 
 ```lua
-local MAJOR, MINOR = "LibBound-1.0", 18
+local MAJOR, MINOR = "LibBound-1.0", 32   -- the current number is in Core.lua
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 ```
 
