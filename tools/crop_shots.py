@@ -8,6 +8,8 @@ script finds those screenshots by their time stamp and writes the crops:
   the addon's own skin -> <out>/<name>.png             (the docs' own screenshots)
   other skins          -> <out>/skins/<skin>/<name>.png
   frames in the unlocked shot -> .../frames/<frame>.png next to them
+  the CurseForge gallery -> <addon>/docs/curseforge/1_<name>.png, 2_..., in upload order, each
+                            under 2 MB (a bigger one becomes a JPEG); --no-gallery skips it
 
 Chat windows (other players' names and messages) are pixelated first.
 
@@ -164,6 +166,79 @@ def crop(img, r):
     return img.crop(box)
 
 
+GALLERY_LIMIT = 2 * 1024 * 1024  # CurseForge takes images up to 2 MB
+IMAGE_REF = re.compile(r"screenshots/([\w./-]+?\.png)")
+
+
+def doc_images(text):
+    """The screenshots a docs page shows, relative to docs/screenshots, in page order."""
+    return IMAGE_REF.findall(text)
+
+
+def gallery_order(shots, docs):
+    """The CurseForge gallery: the unlocked frames first, then each shot in the order it was taken,
+    each options page followed by the single frames the docs show next to it. Frames no docs page
+    shows are left out. shots: the shot names; docs: {page: [image, ...]} (doc_images)."""
+    order = ["frames-unlocked"] + [s for s in shots if s != "frames-unlocked"] if "frames-unlocked" in shots else list(shots)
+    out = []
+    for name in order:
+        img = name + ".png"
+        if img in out:
+            continue
+        out.append(img)
+        if name.startswith("options-"):
+            for page in sorted(docs):
+                if img in docs[page]:
+                    for r in docs[page]:  # its frames, and a whole shot shown with it (travel)
+                        if r not in out and (r.startswith("frames/") or
+                                             (r[:-4] in shots and not r.startswith("options-"))):
+                            out.append(r)
+    return out
+
+
+def write_gallery(src, images, out, limit=GALLERY_LIMIT):
+    """Copy images (relative to src) into out as 1_name, 2_name, ...; one over the limit becomes a JPEG
+    small enough. Clears out first. Returns the file names written."""
+    os.makedirs(out, exist_ok=True)
+    for f in os.listdir(out):
+        os.remove(os.path.join(out, f))
+    names = []
+    for i, rel in enumerate(images, 1):
+        path = os.path.join(src, rel)
+        if not os.path.exists(path):
+            continue
+        base = "%d_%s" % (i, os.path.basename(rel))
+        if os.path.getsize(path) <= limit:
+            Image.open(path).save(os.path.join(out, base), optimize=True)
+        else:
+            base = base[:-4] + ".jpg"
+            img = Image.open(path).convert("RGB")
+            while True:  # lower the quality, then the size, until it fits
+                for q in (92, 85, 75, 60, 45):
+                    img.save(os.path.join(out, base), quality=q, optimize=True)
+                    if os.path.getsize(os.path.join(out, base)) <= limit:
+                        break
+                if os.path.getsize(os.path.join(out, base)) <= limit:
+                    break
+                img = img.resize((round(img.width * 0.8), round(img.height * 0.8)), Image.LANCZOS)
+        names.append(base)
+    return names
+
+
+def gallery(folder, shots):
+    """docs/curseforge from docs/screenshots: numbered in upload order, each under 2 MB."""
+    docs_dir = os.path.join(folder, "docs")
+    docs = {}
+    for root, _, files in os.walk(docs_dir):
+        for f in files:
+            if f.endswith(".md"):
+                docs[os.path.relpath(os.path.join(root, f), docs_dir)] = doc_images(
+                    open(os.path.join(root, f), encoding="utf-8", errors="replace").read())
+    out = os.path.join(docs_dir, "curseforge")
+    names = write_gallery(os.path.join(docs_dir, "screenshots"), gallery_order(shots, docs), out)
+    print("CurseForge gallery -> %s (%d files)" % (out, len(names)))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("addon", help="the addon's folder name, e.g. Spiritbound")
@@ -172,9 +247,11 @@ def main():
     ap.add_argument("--screens", default=os.path.join(GAME, "Screenshots"))
     ap.add_argument("--skin", help="only this skin")
     ap.add_argument("--dry-run", action="store_true", help="show what would be written")
+    ap.add_argument("--no-gallery", action="store_true", help="don't rebuild docs/curseforge")
     a = ap.parse_args()
 
     db_name, own_skin, folder = addon_info(a.addon)
+    a.out_given = bool(a.out)
     a.out = a.out or os.path.join(folder, "docs", "screenshots")
     sv = a.sv or find_sv(a.addon)
     data = LuaReader(open(sv, encoding="utf-8", errors="replace").read()).assignments()
@@ -214,6 +291,9 @@ def main():
                 out = crop(img, r) if r else shrink(img)
                 out.save(path, optimize=True)
             print("  %-28s %d file(s)" % (shot["name"], len(writes)))
+    own = runs.get(own_skin)
+    if own and not a.dry_run and not a.no_gallery and not a.out_given and (not a.skin or a.skin == own_skin):
+        gallery(folder, [shot["name"] for shot in as_list(own.get("list"))])
     if missing:
         sys.exit("%d screenshot(s) not found in %s" % (missing, a.screens))
 
