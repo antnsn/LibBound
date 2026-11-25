@@ -273,6 +273,55 @@ function lib.InstallWidgets(ns)
 	end
 	UI.KeyButton = KeyButton
 
+	-- Text box. With a label: "Label      [box]" on one row (height 30). Without: a box across the
+	-- page, opts.lines tall. Saves on Enter and when it loses focus (set(text)); Esc puts the saved
+	-- text back. opts = { lines = 1, numeric = false, width = 360, max = 255 }. Returns box, height.
+	local function EditBox(page, y, label, get, set, opts)
+		opts = opts or {}
+		local lines = opts.lines or 1
+		local box = CreateFrame("EditBox", nil, page)
+		box:SetAutoFocus(false)
+		box:SetMultiLine(lines > 1)
+		box:SetMaxLetters(opts.max or 255)
+		if opts.numeric then box:SetNumeric(true) end
+		box:SetTextInsets(6, 6, 4, 4)
+		UI.SetFont(box, "ui", 12)
+		box:SetTextColor(unpack(C.text))
+		local bg = Tex(box, "BACKGROUND", C.button); bg:SetAllPoints()
+		UI.Border(box)
+		local h
+		if label then
+			local l = Font(page, 14, C.text)
+			l:SetPoint("TOPLEFT", 0, y - 5)
+			l:SetText(label)
+			box:SetSize(opts.width or 360, 24)
+			box:SetPoint("TOPRIGHT", page, "TOPRIGHT", 0, y)
+			h = 30
+		else
+			box:SetSize(CONTENT_W, lines * 15 + 10)
+			box:SetPoint("TOPLEFT", 0, y)
+			h = lines * 15 + 16
+		end
+		local function Save()
+			set(box:GetText() or "")
+			if opt.win and opt.win.Sync then opt.win.Sync() else box.Sync() end -- a preview may follow it
+			ns.Refresh()
+		end
+		box.Commit = Save -- save the typed text now (a button next to the box reads the setting)
+		box:SetScript("OnEnterPressed", function(self) self:ClearFocus() end) -- focus lost saves
+		box:SetScript("OnEditFocusLost", Save)
+		box:SetScript("OnEscapePressed", function(self)
+			self:SetText(tostring(get() or "")); self:ClearFocus()
+		end)
+		box.Sync = function()
+			if box:HasFocus() then return end
+			box:SetText(tostring(get() or ""))
+		end
+		opt.controls[#opt.controls + 1] = box
+		return box, h
+	end
+	UI.EditBox = EditBox
+
 	-- a row that only syncs (for pages with their own state)
 	local function Syncer(fn) local row = { Sync = fn }; opt.controls[#opt.controls + 1] = row; return row end
 

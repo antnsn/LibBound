@@ -175,6 +175,14 @@ local keyButton, h = UI.KeyButton(page, y, label, dbKey, onSet, what)
 
 The combo is written as `ALT-CTRL-SHIFT-KEY`. A capture refuses to start in combat, and ends when the page or the window hides.
 
+### UI.EditBox
+
+```lua
+local box, h = UI.EditBox(page, y, label, get, set, opts)
+```
+
+A text box. With a `label`: "Label [box]" on one row, height 30. Without: a box across the page, `opts.lines` tall. It saves on Enter and when it loses focus (`set(text)`); Esc puts the saved text back. `opts = { lines = 1, numeric = false, width = 360, max = 255 }`.
+
 ### UI.Button
 
 ```lua

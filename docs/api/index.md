@@ -31,6 +31,7 @@ Two kinds of names:
 | [Combo bar](combo-bar.html) | `ComboBar.lua`, `tools/make_combo_media.py` | `Bound.InstallComboBar` |
 | [Power bar](power-bar.html) | `PowerBar.lua`, `tools/make_bar_media.py` | `Bound.InstallPowerBar` |
 | [Cooldown Manager skin](cooldown-skin.html) | `CooldownSkin.lua` | `Bound.InstallCooldownSkin` |
+| [Service](service.html) | `Service.lua` | `Bound.InstallService`, `ns.ServicePage` |
 
 ## The order of calls
 
