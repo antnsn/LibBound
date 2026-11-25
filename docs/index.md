@@ -107,7 +107,7 @@ See [Testing and tools](testing.html) for the scripts.
 Several Bound addons can be installed at once, each with its own copy of LibBound. LibStub keeps one: the copy with the highest `MINOR` number. `Core.lua` starts with:
 
 ```lua
-local MAJOR, MINOR = "LibBound-1.0", 32   -- the current number is in Core.lua
+local MAJOR, MINOR = "LibBound-1.0", 33   -- the current number is in Core.lua
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 ```
 
