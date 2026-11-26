@@ -1,5 +1,5 @@
 -- LibBound buff key: one key (set on the Extras page) that casts the next thing needed, out of
--- combat. First the top card that has something to cast (your own buffs, a pet to call, water to
+-- combat. First a group version (a Prayer, below) when enough of one group need it, then the top card that has something to cast (your own buffs, a pet to call, water to
 -- conjure: what each card's click would do), then a group buff (ns.groupBuffs) on the next party
 -- or raid member in range who is missing it or about to lose it.
 -- The rule for cards: a shown cast overlay means "cast this now" (buff timers offer the cast only
@@ -9,7 +9,10 @@
 -- a second, and when the group or its buffs change), and the key is an override binding on it.
 --   ns.groupBuffs[#ns.groupBuffs + 1] = { list = { spell IDs, lowest rank first },
 --     names = function() return { aura names that count, e.g. the Prayer version } end,
---     enabled = function() return true end }  -- optional
+--     enabled = function() return true end,  -- optional
+--     prayer = function() return "Prayer of Fortitude" end }  -- optional: the group version, when
+--       known and its reagent is in the bags (else nil). Cast first, on a party or raid subgroup
+--       where at least ns.db.prayerMin (default 3, 0 = never) need the buff, you included.
 -- An addon with its own buff key turns this one off: Bound:NewAddon(name, ns, { buffKey = false, ... }).
 local lib = LibStub("LibBound-1.0")
 if not lib or not lib.installing then return end -- this copy lost to a newer one (Core.lua)
@@ -69,17 +72,70 @@ function lib.InstallBuffKey(ns)
 		return false
 	end
 
+	-- the group's units by subgroup: a raid's 1-8, or a party as 1; you are "player"
+	local function Subgroups()
+		local groups = {}
+		if (Safe(GetNumGroupMembers) or 0) == 0 then return groups end
+		if Safe(IsInRaid) then
+			for i = 1, Safe(GetNumGroupMembers) or 0 do
+				local ok, _, _, sub = pcall(GetRaidRosterInfo, i)
+				if ok and type(sub) == "number" and not IsSecret(sub) then
+					local unit = Safe(UnitIsUnit, "raid" .. i, "player") and "player" or "raid" .. i
+					groups[sub] = groups[sub] or {}
+					table.insert(groups[sub], unit)
+				end
+			end
+		else
+			groups[1] = { "player" }
+			for _, unit in ipairs(GroupUnits()) do table.insert(groups[1], unit) end
+		end
+		return groups
+	end
+
+	-- the buff's aura names that count (the spell and e.g. its Prayer version), or nil when off
+	local function Wanted(g)
+		local id = (not g.enabled or g.enabled()) and ns.BestRank(g.list)
+		local spell = id and ns.SpellName(id)
+		if not spell then return nil end
+		local names = {}
+		for _, n in ipairs(g.names and g.names() or { spell }) do names[n] = true end
+		names[spell] = true
+		return spell, names
+	end
+
+	-- a Prayer on the first subgroup where enough need it: on one of them (you, if you do)
+	local function Prayer()
+		local min = tonumber(ns.db.prayerMin) or 3
+		if min <= 0 then return nil end
+		local groups
+		for _, g in ipairs(ns.groupBuffs) do
+			local _, names = Wanted(g)
+			local prayer = names and g.prayer and g.prayer()
+			if prayer then
+				groups = groups or Subgroups()
+				for sub = 1, 8 do
+					local need, target = 0, nil
+					for _, unit in ipairs(groups[sub] or {}) do
+						if (unit == "player" or Reachable(unit, prayer)) and not Has(unit, names) then
+							need = need + 1
+							target = target or unit
+						end
+					end
+					if need >= min then return ("/cast [nocombat,@%s] %s"):format(target, prayer) end
+				end
+			end
+		end
+	end
+
 	local function Next()
+		local prayer = Prayer()
+		if prayer then return prayer end
 		for _, o in ipairs(ns.overlays or {}) do
 			if o.spell and o:IsShown() then return o:GetAttribute("macrotext") or "" end
 		end
 		for _, g in ipairs(ns.groupBuffs) do
-			local id = (not g.enabled or g.enabled()) and ns.BestRank(g.list)
-			local spell = id and ns.SpellName(id)
+			local spell, names = Wanted(g)
 			if spell then
-				local names = {}
-				for _, n in ipairs(g.names and g.names() or { spell }) do names[n] = true end
-				names[spell] = true
 				for _, unit in ipairs(GroupUnits()) do
 					if Reachable(unit, spell) and not Has(unit, names) then
 						return ("/cast [nocombat,@%s] %s"):format(unit, spell)
