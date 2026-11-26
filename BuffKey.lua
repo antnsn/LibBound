@@ -10,8 +10,12 @@
 --   ns.groupBuffs[#ns.groupBuffs + 1] = { list = { spell IDs, lowest rank first },
 --     names = function() return { aura names that count, e.g. the Prayer version } end,
 --     enabled = function() return true end,  -- optional
+--     levels = { 1, 12, 24, 36, 48, 60 },  -- optional: each rank's spell level (as list): a rank
+--       goes only on someone at most 10 levels below it, so a low member gets the best rank they can
+--       take (cast by spell ID); without levels the best rank always
 --     short = "Fortitude", icon = 135987,  -- optional: the group card's label and icon
---     prayer = function() return "Prayer of Fortitude" end }  -- optional: the group version, when
+--     prayer = function() return "Prayer of Fortitude", 48 end }  -- optional: the group version (and
+--       its rank's spell level: not on a group with someone more than 10 levels below it), when
 --       known and its reagent is in the bags (else nil). Cast first, on a party or raid subgroup
 --       where at least ns.db.prayerMin (default 3, 0 = never) need the buff, you included.
 -- An addon with its own buff key turns this one off: Bound:NewAddon(name, ns, { buffKey = false, ... }).
@@ -109,6 +113,25 @@ function lib.InstallBuffKey(ns)
 		return spell, names
 	end
 
+	-- the unit's level, or nil when the client won't say (-1: far above you)
+	local function Level(unit)
+		local l = Safe(UnitLevel, unit)
+		return type(l) == "number" and l > 0 and l or nil
+	end
+	local function Known(id)
+		local ok, k = pcall(IsPlayerSpell, id)
+		return ok and not IsSecret(k) and k and true or false
+	end
+
+	-- the best rank of a group buff this unit can take (a rank goes on someone at most 10 levels
+	-- below its spell level), or nil when even the first is too high for them
+	local function RankFor(g, unit)
+		local level = g.levels and Level(unit)
+		for i = #g.list, 1, -1 do
+			if Known(g.list[i]) and (not level or (g.levels[i] or 0) <= level + 10) then return g.list[i] end
+		end
+	end
+
 	-- a Prayer on the first subgroup where enough need it: on one of them (you, if you do)
 	local function Prayer()
 		local min = tonumber(ns.db.prayerMin) or 3
@@ -116,18 +139,22 @@ function lib.InstallBuffKey(ns)
 		local groups
 		for _, g in ipairs(ns.groupBuffs) do
 			local _, names = Wanted(g)
-			local prayer = names and g.prayer and g.prayer()
+			local prayer, prayerLevel
+			if names and g.prayer then prayer, prayerLevel = g.prayer() end
 			if prayer then
 				groups = groups or Subgroups()
 				for sub = 1, 8 do
-					local need, target = 0, nil
+					local need, target, tooLow = 0, nil, false
 					for _, unit in ipairs(groups[sub] or {}) do
 						if (unit == "player" or Reachable(unit, prayer)) and not Has(unit, names) then
 							need = need + 1
 							target = target or unit
+							local l = prayerLevel and Level(unit)
+							if l and prayerLevel > l + 10 then tooLow = true end
 						end
 					end
-					if need >= min then return ("/cast [nocombat,@%s] %s"):format(target, prayer) end
+					-- someone too low for it: single casts for that group, each at their rank
+					if need >= min and not tooLow then return ("/cast [nocombat,@%s] %s"):format(target, prayer) end
 				end
 			end
 		end
@@ -142,9 +169,13 @@ function lib.InstallBuffKey(ns)
 		for _, g in ipairs(ns.groupBuffs) do
 			local spell, names = Wanted(g)
 			if spell then
+				local best = ns.BestRank(g.list)
 				for _, unit in ipairs(GroupUnits()) do
 					if Reachable(unit, spell) and not Has(unit, names) then
-						return ("/cast [nocombat,@%s] %s"):format(unit, spell)
+						local rank = RankFor(g, unit)
+						if rank == best then return ("/cast [nocombat,@%s] %s"):format(unit, spell) end
+						-- a lower rank: by spell ID (a "(Rank 3)" name is not certain to work on Forever)
+						if rank then return { spell = rank, unit = unit } end
 					end
 				end
 			end
@@ -194,9 +225,16 @@ function lib.InstallBuffKey(ns)
 	function M:Update()
 		UpdateCard()
 		if not btn or InCombatLockdown() then return end
-		local ok, macro = pcall(Next)
-		macro = ok and macro or ""
-		if btn:GetAttribute("macrotext") ~= macro then btn:SetAttribute("macrotext", macro) end
+		local ok, what = pcall(Next)
+		what = ok and what or ""
+		-- a macro, or one spell by ID on a unit; cbtype is what the combat driver restores after a fight
+		local kind = type(what) == "table" and "spell" or "macro"
+		local function Set(k, v) if btn:GetAttribute(k) ~= v then btn:SetAttribute(k, v) end end
+		Set("cbtype", kind)
+		Set("type", kind)
+		Set("macrotext", kind == "macro" and what or "")
+		Set("spell", kind == "spell" and what.spell or nil)
+		Set("unit", kind == "spell" and what.unit or nil)
 	end
 
 	function ns.BindBuffKey()
@@ -213,13 +251,14 @@ function lib.InstallBuffKey(ns)
 		btn:SetAttribute("type", "macro")
 		-- off in combat, secure (a card's macro may have no [nocombat]: pet calls, feeding)
 		btn:SetAttribute("_onstate-boundcombat",
-			[[ self:SetAttribute("type", (newstate == 1 or newstate == "1") and "none" or "macro") ]])
+			[[ self:SetAttribute("type", (newstate == 1 or newstate == "1") and "none" or (self:GetAttribute("cbtype") or "macro")) ]])
 		RegisterStateDriver(btn, "boundcombat", "[combat] 1; 0")
 		btn:SetAttribute("macrotext", "")
 		btn:SetScript("PostClick", function(self, _, down)
 			local useDown = GetCVarBool and GetCVarBool("ActionButtonUseKeyDown")
 			if (down and not useDown) or (not down and useDown) then return end -- the phase that didn't act
-			if (self:GetAttribute("macrotext") or "") == "" and not InCombatLockdown() then
+			if self:GetAttribute("cbtype") ~= "spell" and (self:GetAttribute("macrotext") or "") == ""
+				and not InCombatLockdown() then
 				ns.Print("nothing to buff right now.")
 			end
 		end)
