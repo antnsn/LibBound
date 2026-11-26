@@ -18,7 +18,7 @@
 --   buffKey = false, carrot = false,      -- optional: no shared buff key / Carrot on a Stick
 -- }
 -- Returns true when the addon should load nothing (wrong class): its files then return early.
-local MAJOR, MINOR = "LibBound-1.0", 33
+local MAJOR, MINOR = "LibBound-1.0", 34
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 -- the other files of this copy install themselves only when this copy won (a newer or the
 -- first one); BuffTimer.lua, the last file, clears the flag
