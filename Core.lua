@@ -18,7 +18,7 @@
 --   buffKey = false, carrot = false,      -- optional: no shared buff key / Carrot on a Stick
 -- }
 -- Returns true when the addon should load nothing (wrong class): its files then return early.
-local MAJOR, MINOR = "LibBound-1.0", 34
+local MAJOR, MINOR = "LibBound-1.0", 35
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 -- the other files of this copy install themselves only when this copy won (a newer or the
 -- first one); BuffTimer.lua, the last file, clears the flag
@@ -41,6 +41,9 @@ lib.SHARED_DEFAULTS = {
 	wfPoint = { "CENTER", "UIParent", "CENTER", 0, 290 },
 	-- Carrot on a Stick while mounted (Carrot.lua); carrotPrev: the trinket it took off, per character
 	carrotSwap = false, carrotSlot = "Bottom", carrotPrev = {},
+	-- the group card (BuffKey.lua): who in the group lacks a group buff; an addon turns it on with
+	-- groupCard = true in its defaults and gives the toggle a place on its own page
+	gbPoint = { "CENTER", "UIParent", "CENTER", 250, 140 },
 }
 
 -- Secret values (hidden from addons in combat on Forever). Newer clients expose canaccessvalue,
