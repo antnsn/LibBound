@@ -12,6 +12,7 @@
 	<Script file="Travel.lua"/>
 	<Script file="Carrot.lua"/>
 	<Script file="Shots.lua"/>
+	<Script file="Assign.lua"/>
 	<Script file="BuffKey.lua"/>
 	<Script file="ComboBar.lua"/>
 	<Script file="PowerBar.lua"/>

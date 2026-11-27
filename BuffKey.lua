@@ -14,6 +14,8 @@
 --       goes only on someone at most 10 levels below it, so a low member gets the best rank they can
 --       take (cast by spell ID); without levels the best rank always
 --     short = "Fortitude", icon = 135987,  -- optional: the group card's label and icon
+--     slot = 1243,  -- optional: its assignment slot (Assign.lua, the first rank's spell ID): left out
+--       while another live caster in the group owns it, on (whatever enabled says) while you do
 --     prayer = function() return "Prayer of Fortitude", 48 end }  -- optional: the group version (and
 --       its rank's spell level: not on a group with someone more than 10 levels below it), when
 --       known and its reagent is in the bags (else nil). Cast first, on a party or raid subgroup
@@ -27,6 +29,12 @@ local RESTRICTED = _G.PP_RESTRICTED or "<restricted>" -- a hidden aura name (as 
 
 function lib.InstallBuffKey(ns)
 	ns.groupBuffs = ns.groupBuffs or {}
+	-- /<slash> assign (Assign.lua): who buffs the group; only says something when a buff has a slot
+	if lib.AssignCommand and ns.cfg then
+		ns.cfg.commands = ns.cfg.commands or {}
+		ns.cfg.commands.assign = ns.cfg.commands.assign or { fn = function(arg) lib.AssignCommand(ns, arg) end,
+			help = "assign [number]: who buffs the group; a number takes or releases that buff" }
+	end
 	local M = {}
 	ns.modules[#ns.modules + 1] = M
 	local btn, bindLater
@@ -102,9 +110,13 @@ function lib.InstallBuffKey(ns)
 		return groups
 	end
 
-	-- the buff's aura names that count (the spell and e.g. its Prayer version), or nil when off
+	-- the buff's aura names that count (the spell and e.g. its Prayer version), or nil when off or
+	-- when another live caster owns its slot (Assign.lua); one you own is on whatever its toggle says
 	local function Wanted(g)
-		local id = (not g.enabled or g.enabled()) and ns.BestRank(g.list)
+		local owner, mine
+		if g.slot and lib.AssignOwner then owner, mine = lib.AssignOwner(g.slot) end
+		if owner and not mine then return nil end
+		local id = (mine or not g.enabled or g.enabled()) and ns.BestRank(g.list)
 		local spell = id and ns.SpellName(id)
 		if not spell then return nil end
 		local names = {}
@@ -276,6 +288,36 @@ function lib.InstallBuffKey(ns)
 			M:Update()
 		end)
 		C_Timer.NewTicker(0.5, function() M:Update() end)
+		-- assignments, shared with other casters (Assign.lua): only when a group buff has a slot
+		local slotted = {}
+		for _, g in ipairs(ns.groupBuffs) do if g.slot then slotted[#slotted + 1] = g end end
+		if #slotted > 0 and lib.StartAssign then
+			ns.assignSlotted = slotted
+			lib.StartAssign()
+			-- a line in chat when someone else hands you a group buff or takes one over
+			local last = {}
+			for _, g in ipairs(slotted) do last[g.slot] = lib.AssignOwner(g.slot) or false end
+			lib.AssignWatch(function()
+				for _, g in ipairs(slotted) do
+					local owner, mine = lib.AssignOwner(g.slot)
+					owner = owner or false
+					if owner ~= last[g.slot] then
+						local was = last[g.slot]
+						last[g.slot] = owner
+						local name = lib.AssignLabel(g.slot)
+						if (GetTime() - (ns.assignEditAt or -10)) > 2 then
+							local away = not owner and lib.AssignRecorded(g.slot)
+							if mine then ns.Print(name .. ": yours now. The buff key keeps the group on it.")
+							elseif owner then ns.Print(name .. ": " .. owner .. " buffs the group now.")
+							elseif away then ns.Print(name .. ": " .. away .. " is away, so it's yours to cast again.")
+							elseif was then ns.Print(name .. ": nobody is assigned now.") end
+						end
+					end
+				end
+				M:Update()
+				if ns.assignRows then ns.assignRows.Sync() end
+			end)
+		end
 		ns.BindBuffKey()
 		M:Update()
 	end
