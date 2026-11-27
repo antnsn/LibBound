@@ -349,6 +349,7 @@ function lib.InstallOptions(ns, cfg)
 			p:Add(UI.Note(p, p.y, groupBuff
 				and "Out of combat, each press casts the next thing a card asks for, then a group buff on the next group member in range who needs it."
 				or "Out of combat, each press casts the next thing a card asks for.") + 6)
+			if lib.AssignRows then lib.AssignRows(ns, UI, p, W) end
 		end
 		local function Timer(label, key, test, note)
 			local y = p.y - 4

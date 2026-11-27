@@ -26,6 +26,7 @@ Two kinds of names:
 | [Travel panel](travel.html) | `Travel.lua` | `Bound.InstallTravel` |
 | [Minimap button](minimap.html) | `Minimap.lua` | `Bound.InstallMinimap` |
 | [Buff key](buff-key.html) | `BuffKey.lua` | `ns.groupBuffs` |
+| [Assignments](assign.html) | `Assign.lua` | `slot` on a group buff; `lib.AssignOwner`, `lib.AssignSet` |
 | [Carrot on a Stick](carrot.html) | `Carrot.lua` | nothing: `NewAddon` installs it |
 | [Shots](shots.html) | `Shots.lua`, `tools/crop_shots.py` | `/<cmd> shots` |
 | [Combo bar](combo-bar.html) | `ComboBar.lua`, `tools/make_combo_media.py` | `Bound.InstallComboBar` |
