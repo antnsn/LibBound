@@ -8,7 +8,7 @@ description: A grid (or list) of the group showing who has a debuff the class ca
 # Cleanse
 {: .no_toc }
 
-`Cleanse.lua`: the group as a grid of small cells, like Decursive, or as a list. A cell lights up when its player has a debuff the class can remove. Click a cell to cast, or use a mouseover key per spell. It was moved here from Lightbound, with the same settings (`cl*`), so a paladin's settings carry over. Lightbound (Cleanse) and Spiritbound (Dispel) use it.
+`Cleanse.lua`: the group as a grid of small cells, like Decursive, or as a list. A cell lights up when its player has a debuff the class can remove. Click a cell to cast, or use a mouseover key per spell. It was moved here from Lightbound, with the same settings (`cl*`), so a paladin's settings carry over. Lightbound (Cleanse), Spiritbound (Dispel), Dreambound (Cure), Chronobound (Decurse) and Stormbound (Cure) use it.
 
 1. TOC
 {:toc}
@@ -44,11 +44,11 @@ The frame appears once one of the spells is known. `/<slash> ignore <debuff>` (a
 | --- | --- | --- |
 | Paladin (Lightbound) | Purify 1152 (Poison, Disease), then Cleanse 4987 (and Magic) | |
 | Priest (Spiritbound) | Dispel Magic 527, 988 (Magic) | Cure Disease 528, then Abolish Disease 552 (Disease) |
-| Druid | Remove Curse 2782 (Curse) | Cure Poison 8946, then Abolish Poison 2893 (Poison) |
-| Mage | Remove Lesser Curse 475 (Curse) | |
-| Shaman | Cure Poison 526 (Poison) | Cure Disease 2870 (Disease) |
+| Druid (Dreambound) | Remove Curse 2782 (Curse) | Cure Poison 8946, then Abolish Poison 2893 (Poison) |
+| Mage (Chronobound) | Remove Lesser Curse 475 (Curse) | |
+| Shaman (Stormbound) | Cure Poison 526 (Poison) | Cure Disease 2870 (Disease) |
 
-The druid, mage and shaman rows are not wired in yet. Check the IDs on Forever when they are.
+Spell IDs are Classic's: check them on Forever.
 
 ## How it works
 
