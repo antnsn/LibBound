@@ -36,7 +36,7 @@ Bound.InstallOptions(ns, cfg)
 | --- | --- |
 | `cfg.header` | Text in the window header, next to the logo. Default: the addon's title. |
 | `cfg.launcher` | One line for the launcher in the game's Settings > AddOns list. `Type /cmd in chat to open the options.` is added. |
-| `cfg.extras` | `function(UI, page, width)`: more sections at the bottom of the shared Extras page. The page is 494 px high and the shared sections use most of it: keep an extra to a row or two. |
+| `cfg.extras` | `function(UI, page, width)`: more sections at the bottom of the shared Extras page. The page is 494 px high and the shared sections use most of it: keep an extra to a row or two. Pages don't scroll: whatever runs past the bottom is drawn over the footer. |
 
 Call it last, after every file has added its pages. It defines `ns.ToggleOptions()` and registers the Settings launcher. The window is built the first time it opens.
 

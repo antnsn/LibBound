@@ -72,7 +72,7 @@ ns.groupBuffs[#ns.groupBuffs + 1] = {
 | `list` | Rank list. The key casts `ns.BestRank(list)`; an entry with no known rank is skipped. |
 | `names` | Optional. Aura names that count as having the buff, e.g. the group version. The spell's own name always counts. |
 | `enabled` | Optional. Return false to skip the entry, e.g. while the player turned that buff's card off. |
-| `slot` | Optional. The entry's [assignment](assign.html) slot: the first rank's spell ID (1243 Fortitude, 14752 Divine Spirit, 976 Shadow Protection, 1126 Mark of the Wild, 1459 Arcane Intellect). While another live caster in the group owns it, the key, the Prayer and the group card leave it out. While you own it, it is on even when `enabled` says no. Setting it starts the shared assignments and puts their rows on the Extras page. |
+| `slot` | Optional. The entry's [assignment](assign.html) slot: the first rank's spell ID (1243 Fortitude, 14752 Divine Spirit, 976 Shadow Protection, 1126 Mark of the Wild, 1459 Arcane Intellect). While another live caster in the group owns it, the key, the Prayer and the group card leave it out. While you own it, it is on even when `enabled` says no. Setting it starts the shared assignments and adds the "Group" options page with their rows. |
 
 `ns.groupBuffs` exists after `NewAddon`. Dreambound:
 

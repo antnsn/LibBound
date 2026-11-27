@@ -3,7 +3,8 @@
 --   ns.optionPages[#ns.optionPages + 1] = function(UI) local p = UI.NewPage("Title", "sub") ... end
 -- Widgets return (widget, height); add the height with p:Add(h). UI.CONTENT_W is the usable width.
 -- LibBound adds the shared pages itself: "Extras" (buff key, Well Rested, Well Fed,
--- Carrot on a Stick, then the addon's own extras) and "Skin" (the skin, explanations, the minimap button). lib.InstallOptions(ns, { header = "Mage helper", launcher = "one line for Settings",
+-- Carrot on a Stick, then the addon's own extras), "Group" (who buffs the group, only for an addon
+-- whose group buffs have assignment slots) and "Skin" (the skin, explanations, the minimap button). lib.InstallOptions(ns, { header = "Mage helper", launcher = "one line for Settings",
 --   extras = function(UI, page, width) end -- more sections on the Extras page })
 local lib = LibStub("LibBound-1.0")
 if not lib or not lib.installing then return end -- this copy lost to a newer one (Core.lua)
@@ -349,7 +350,6 @@ function lib.InstallOptions(ns, cfg)
 			p:Add(UI.Note(p, p.y, groupBuff
 				and "Out of combat, each press casts the next thing a card asks for, then a group buff on the next group member in range who needs it."
 				or "Out of combat, each press casts the next thing a card asks for.") + 6)
-			if lib.AssignRows then lib.AssignRows(ns, UI, p, W) end
 		end
 		local function Timer(label, key, test, note)
 			local y = p.y - 4
@@ -491,7 +491,9 @@ function lib.InstallOptions(ns, cfg)
 		local sl = Tex(side, "ARTWORK", C.border); sl:SetPoint("TOPRIGHT"); sl:SetPoint("BOTTOMRIGHT"); sl:SetWidth(1)
 
 		for _, build in ipairs(ns.optionPages) do build(UI) end
-		BuildExtras(); BuildSkin()
+		BuildExtras()
+		if lib.AssignPage then lib.AssignPage(ns, UI, CONTENT_W) end -- "Group": who buffs the group (Assign.lua)
+		BuildSkin()
 
 		local pages = opt.pages
 		local step = math.min(36, math.floor((HEIGHT - HEADER_H - FOOTER_H - 20) / #pages))

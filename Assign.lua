@@ -20,7 +20,7 @@
 --                                 runs the protocol: we read and edit its state and send nothing
 --                                 ourselves) or nil (not started)
 -- The buff key (BuffKey.lua) leaves out a group buff someone else owns and gives you the ones you
--- own even when their toggle is off. The Extras page has the claim/release rows.
+-- own even when their toggle is off. The "Group" options page has the claim/release rows.
 local lib = LibStub("LibBound-1.0")
 if not lib or not lib.installing then return end -- this copy lost to a newer one (Core.lua)
 
@@ -677,31 +677,45 @@ function lib.AssignState(key)
 	if not me then return "Not in a group", nil end
 	local owner, mine = lib.AssignOwner(key)
 	if mine then return "You", "Release" end
-	if owner then return owner, "Take" end
 	local away = lib.AssignRecorded(key)
 	if away == me then return "You (can't cast it)", "Release" end
-	if away then return away .. " (away)", "Take" end
-	return "Nobody", "Take"
+	-- Take only with the group spell: an owner who can't cast it never counts
+	local slot = SLOT_BY_KEY[key]
+	local can = false
+	for _, id in ipairs(slot and (slot.choices or { slot.needs }) or {}) do
+		local ok, k = pcall(IsPlayerSpell, id)
+		if ok and k == true then can = true end
+	end
+	local take = can and "Take" or nil
+	if owner then return owner, take end
+	if away then return away .. " (away)", take end
+	return can and "Nobody" or "Nobody (you can't cast it yet)", take
 end
 
 -- claim the slot for yourself, or release it (the button and /<slash> assign)
 function lib.AssignToggle(ns, key)
 	local _, action = lib.AssignState(key)
-	if not action then ns.Print(WHY.group) return end
+	if not action then
+		ns.Print(lib.AssignMe() and (lib.AssignLabel(key) .. ": you can't cast it yet, so you can't have it.") or WHY.group)
+		return
+	end
 	ns.assignEditAt = GetTime()
 	local ok, why = lib.AssignSet(key, action == "Take" and lib.AssignMe() or nil)
 	if not ok then ns.Print(WHY[why] or tostring(why)) return end
 	ns.Print(lib.AssignLabel(key) .. (action == "Take" and ": yours now." or ": released, nobody is assigned."))
 end
 
--- the Extras page section (Options.lua calls this under the buff key): one row per slotted buff
-function lib.AssignRows(ns, UI, p, W)
+-- the "Group" page (Options.lua builds it after Extras): one row per slotted buff. Its own page:
+-- the Extras page has no room left (pages don't scroll)
+function lib.AssignPage(ns, UI, W)
 	local slotted = {}
 	for _, g in ipairs(ns.groupBuffs or {}) do if g.slot and SLOT_BY_KEY[g.slot] then slotted[#slotted + 1] = g end end
 	if #slotted == 0 then return end
-	p:Add(UI.Section(p, p.y - 4, "Who buffs the group") + 2)
+	local p = UI.NewPage("Group", "Who buffs the group.")
 	p:Add(UI.Note(p, p.y, "Shared with the others in your group who run a Bound addon, Buffy or Priestly. "
-		.. "While someone else has a buff, your buff key leaves it to them.") + 4)
+		.. "While someone else has a buff, your buff key and the group card leave it to them. "
+		.. "Only someone who can cast a buff's group version can have it.") + 8)
+	p:Add(UI.Section(p, p.y, "Who buffs the group") + 2)
 	local rows = {}
 	for _, g in ipairs(slotted) do
 		local label = UI.Font(p, 14, UI.C.text)
@@ -712,8 +726,10 @@ function lib.AssignRows(ns, UI, p, W)
 		b:SetPoint("TOPRIGHT", p, "TOPRIGHT", 0, p.y - 2)
 		b:SetScript("OnClick", function() lib.AssignToggle(ns, g.slot) ns.assignRows.Sync() end)
 		rows[#rows + 1] = { slot = g.slot, label = label, status = status, button = b }
-		p:Add(28)
+		p:Add(30)
 	end
+	p:Add(UI.Note(p, p.y - 6, "Not saved: after a /reload the group is asked again. "
+		.. ns.cfg.slash[1] .. " assign lists them in chat.") + 6)
 	ns.assignRows = UI.Syncer(function()
 		for _, r in ipairs(rows) do
 			local text, action = lib.AssignState(r.slot)
