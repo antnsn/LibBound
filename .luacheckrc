@@ -12,6 +12,6 @@ read_globals = {
 	"UnitIsDeadOrGhost", "UnitName", "issecretvalue", "canaccessvalue", "hooksecurefunc", "CooldownViewerSettings", "UnitGUID", "GetCVar", "SetCVar",
 	"IsMounted", "IsInInstance", "GetInventoryItemID", "EquipItemByName", "C_Container", "PickupInventoryItem", "PutItemInBackpack",
 	"PutItemInBag", "ContainerIDToInventoryID", "CursorHasItem", "NUM_BAG_SLOTS", "GetRealmName", "GetItemCount",
-	"GetZoneText", "UnitLevel", "C_ChatInfo", "LE_PARTY_CATEGORY_HOME", "LE_PARTY_CATEGORY_INSTANCE", "GetUnitName", "UNKNOWNOBJECT", "GetServerTime", "IsInGroup", "C_PartyInfo", "GetChannelList", "DEFAULT_CHAT_FRAME", "ChatFrame_OpenChat",
+	"GetZoneText", "UnitLevel", "C_ChatInfo", "LE_PARTY_CATEGORY_HOME", "LE_PARTY_CATEGORY_INSTANCE", "GetUnitName", "UNKNOWNOBJECT", "GetServerTime", "IsInGroup", "C_CurveUtil", "C_Secrets", "GetNumSubgroupMembers", "RAID_CLASS_COLORS", "wipe", "C_PartyInfo", "GetChannelList", "DEFAULT_CHAT_FRAME", "ChatFrame_OpenChat",
 }
 globals = { "SlashCmdList", "_G" }

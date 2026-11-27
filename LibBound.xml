@@ -18,5 +18,6 @@
 	<Script file="PowerBar.lua"/>
 	<Script file="CooldownSkin.lua"/>
 	<Script file="Service.lua"/>
+	<Script file="Cleanse.lua"/>
 	<Script file="BuffTimer.lua"/> <!-- last: it ends the install (lib.installing) -->
 </Ui>
