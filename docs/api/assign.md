@@ -24,7 +24,7 @@ ns.groupBuffs[#ns.groupBuffs + 1] = { list = D.fortitude, slot = D.fortitude[1],
 The buff key's `Init` starts the shared client the first time an entry has a slot. Then:
 
 - **The buff key** leaves out a buff that another live caster owns: no single casts, no Prayer, and no line on the group card. A buff you own is on even when its `enabled` says no.
-- **The Extras page** gets a **Who buffs the group** section with one row per slotted buff: who has it, and **Take** / **Release**.
+- **A "Group" options page** (after Extras) lists one row per slotted buff: who has it, and **Take** / **Release**. **Take** is grey until you can cast the slot's group spell. It has a page of its own because the Extras page has no room left, and pages don't scroll.
 - **`/<slash> assign`** lists them, and `/<slash> assign <n>` takes or releases the n-th one.
 - **Chat** gets one line when someone else gives you a buff, takes one over, or goes away.
 
