@@ -19,5 +19,6 @@
 	<Script file="CooldownSkin.lua"/>
 	<Script file="Service.lua"/>
 	<Script file="Cleanse.lua"/>
+	<Script file="WeaponStone.lua"/>
 	<Script file="BuffTimer.lua"/> <!-- last: it ends the install (lib.installing) -->
 </Ui>

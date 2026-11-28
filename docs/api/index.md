@@ -28,6 +28,7 @@ Two kinds of names:
 | [Buff key](buff-key.html) | `BuffKey.lua` | `ns.groupBuffs` |
 | [Assignments](assign.html) | `Assign.lua` | `slot` on a group buff; `lib.AssignOwner`, `lib.AssignSet` |
 | [Cleanse](cleanse.html) | `Cleanse.lua` | `Bound.InstallCleanse`, `ns.CleansePage`, `ns.ApplyCleanseKey` |
+| [Weapon stone](weapon-stone.html) | `WeaponStone.lua` | `Bound.InstallWeaponStone`, `ns.WeaponStoneOptions`, `ns.BestStone` |
 | [Carrot on a Stick](carrot.html) | `Carrot.lua` | nothing: `NewAddon` installs it |
 | [Shots](shots.html) | `Shots.lua`, `tools/crop_shots.py` | `/<cmd> shots` |
 | [Combo bar](combo-bar.html) | `ComboBar.lua`, `tools/make_combo_media.py` | `Bound.InstallComboBar` |
